@@ -1,0 +1,21 @@
+Truffle has web3.js inside, so no need to import it
+
+
+
+1) go into the folder of the project
+2) install the package.json + lite server with the following:
+	1) npm init
+	2) npm install --save lite-server
+	3) npm install --save web3
+	4) npm install --save @truffle/contract
+3) start the lite server: npm run dev => will open the app.js file 
+
+
+Generally, after the installation, you need:
+MNEMONIC: "fly harvest slam field nuclear leave decorate manage easily neither garlic venue"
+
+1) ganache-cli => open a tab with it, so init the blockchain for test
+1.1) truffle test --network development --show-events => start the test and look for the configuration in truffle_config file /network/development field
+2) truffle migrate --network development --reset  => deploy the contracts on the blockchain, so wait for the commands given by app.js
+3) reset the tx history of the account on metamask in order to reset the nonce to 0
+3) npm run dev

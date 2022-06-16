@@ -4,11 +4,19 @@
   "description": "First version of the P2P project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "lite-server"
   },
   "author": "Matteo D'Onofrio",
   "license": "ISC",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.6.0"
-  }
+    "@openzeppelin/contracts": "^4.6.0",
+    "@truffle/contract": "^4.5.14",
+    "lite-server": "^2.6.1",
+    "web3": "^1.7.3"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {}
 }

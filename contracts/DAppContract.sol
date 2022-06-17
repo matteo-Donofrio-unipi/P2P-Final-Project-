@@ -7,10 +7,18 @@ contract DAppContract {
     uint public valDue;
     event click();
     event clickDue(uint);
+    address public operator;
 
     constructor() {
-
+        operator = msg.sender;
         value = 42;
+    }
+
+    event give_operator(address oper);
+
+    function get_operator() external returns (address){
+        emit give_operator(operator);
+        return operator;
     }
 
     function pressClick() public {

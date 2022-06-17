@@ -8,7 +8,16 @@ Truffle has web3.js inside, so no need to import it
 	2) npm install --save lite-server
 	3) npm install --save web3
 	4) npm install --save @truffle/contract
-3) start the lite server: npm run dev => will open the app.js file 
+	5) ensure to have decommented the dev_network part 
+	6) ensure to have the bs-config.json file 
+	6.1) ensure to have properly set the file package.json
+	7) ensure to have set correctly the 1_initial_migration.js file 
+	7.1) ensure to have downloaded "npm install @openzeppelin/contracts"
+	8) ganache-cli -l 100000000 -m "fly harvest slam field nuclear leave decorate manage easily neither garlic venue"
+	9) reset account on metamask	
+	10) truffle migrate --network development --reset
+	11) npm run dev
+
 
 
 Generally, after the installation, you need:

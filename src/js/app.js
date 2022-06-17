@@ -1,9 +1,12 @@
-App = {
+App = { // OGGETTO CON VARIABILI E METODI
 
     contracts: {},
     web3Provider: null,             // Web3 provider
     url: 'http://localhost:8545',   // Url for web3
-    account: '0x0',                 // current ethereum account
+    account: '0x0',
+    operator: '0x0',                 // current ethereum account
+    current_account_type : "operator",
+
 
     init: function() {
 
@@ -21,7 +24,7 @@ App = {
             App.web3Provider = window.ethereum; // !! new standard for modern eth browsers (2/11/18)
             web3 = new Web3(App.web3Provider);
             try {
-                    ethereum.enable().then(async() => {
+                    ethereum.request({ method: 'eth_requestAccounts' }).then(async() => {
                         console.log("DApp connected to Metamask");
                     });
             }
@@ -43,7 +46,10 @@ App = {
         web3.eth.getCoinbase(function(err, account) {
             if(err == null) {
                 App.account = account;
+                operator = account;
+                App.current_account_type = "operator";
                 $("#accountId").html("Your address: " + account);
+                $("#accountType").html("Your type: " + App.current_account_type);
             }
         });
 
@@ -70,6 +76,30 @@ App = {
                     // If event has parameters: event.returnValues.valueName
                 });
             // });
+
+            /*
+            instance.give_operator().on('data', function (event) {
+                $("#valueIdSecondo").html("Operator is :" + event.args[0]);
+                console.log("Event catched 2");
+                console.log(event);
+                // If event has parameters: event.returnValues.valueName
+            });
+            */
+
+        });
+
+
+        ethereum.on('accountsChanged', function (accounts) {
+            if(accounts[0]==operator)
+                App.current_account_type = "operator";
+            else
+                App.current_account_type = "user";
+            App.account = accounts[0];
+
+            $("#accountId").html("Your address: " + App.account);
+            $("#accountType").html("Your type: " + App.current_account_type);
+            
+
         });
 
         return App.render();
@@ -94,8 +124,29 @@ App = {
 
             await instance.pressClick({from: App.account});
         });
-    } 
+    },
+
+    getOperator: function() {
+
+        App.contracts["Contract"].deployed().then(async(instance) =>{
+            let res = await instance.get_operator({from: App.account});
+            $("#valueIdSecondo").html("Operator is :" + res.logs[0].args[0]);
+            //$("#mainUI").hide();
+            App.operator = res.logs[0].args[0];
+            //console.log(res);
+        });
+    }
+    
 }
+
+function mostraAccount() {
+    web3.eth.getAccounts()
+            .then(console.log);
+}
+
+
+
+
 
 // Call init whenever the window loads
 $(function() {

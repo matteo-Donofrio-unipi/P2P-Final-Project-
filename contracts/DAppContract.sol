@@ -16,8 +16,7 @@ contract DAppContract {
 
     event give_operator(address oper);
 
-    function get_operator() external returns (address){
-        emit give_operator(operator);
+    function get_operator() view public returns (address){
         return operator;
     }
 

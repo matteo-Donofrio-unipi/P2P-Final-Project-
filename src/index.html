@@ -13,12 +13,14 @@
 
 <body>
 
+    <!-- COMMON INTERFACE FIRST PART START-->
+
+
     <!-- Main title -->
     <div class="box" id="title">
         <h1 class="text-center">TRY Lottery Dashboard</h1>
     </div>
-    
-    
+
     <!-- First block of info displayed -->
     <div class='parent'>
         <div class='child'>
@@ -30,47 +32,111 @@
         </div>
 
         <div class='child'>
-            <h3 class="text-left" id="accountType">Balance: </h3>
+            <h3 class="text-left" id="accountBalance">Account balance: </h3>
         </div>
     </div>
 
-    <!-- dividing line -->
-    <hr style="height:40%;width:70%;border-width:1%;color:gray;background-color:gray">
+    <!-- COMMON INTERFACE FIRST PART END-->
 
-    <!-- Commands string -->
-    <div class='parent'>
-        <div class='child'>
-            <h4 class="text-center">Commands for the lottery handling: </h4>
-        </div>
-    </div>
 
-    <!-- First 4 Buttons -->
-    <div class="cards">
-        <button class="card" onclick="App.getOperator()">Start New Round</button>
-        <button class="card" onclick="App.getOperator()">Draw Numbers</button>
-        <button class="card" onclick="App.getOperator()">Compute Prizes</button>
-        <button class="card" onclick="App.getOperator()">Give Prizes</button>
-    </div>
-
-    <!-- Last button + textarea -->
-    <div class="cards-second" >
-        <button class="card" onclick="App.getOperator()">Buy Collectible (get operator)</button>
-        <input  type="number" onchange="alert(this.value)" min="1" max="8" size="10" maxlength="1" placeholder="Insert the collectible ID">
-    </div>
+    <!-- OPERATOR INTERFACE INIZIO -->
+    <div id="operator_interface">
     
-    <!-- dividing line -->
-    <hr style="height:40%;width:70%;border-width:1%;color:gray;background-color:gray">
+        <!-- dividing line -->
+        <hr style="height:40%;width:70%;border-width:1%;color:gray;background-color:gray">
+    
+        <!-- Commands string -->
+        <div class='parent'>
+            <div class='child'>
+                <h2 class="text-center">Commands for the lottery handling: </h2>
+            </div>
+        </div>
+    
+        <!-- First 4 Buttons -->
+        <div class="cards">
+            <button class="card" onclick="App.getOperator()">Start New Round</button>
+            <button class="card" onclick="App.getOperator()">Draw Numbers</button>
+            <button class="card" onclick="App.getOperator()">Compute Prizes</button>
+            <button class="card" onclick="App.getOperator()">Give Prizes</button>
+        </div>
+
+        <!-- Commands string -->
+        <div class='parent'>
+            <div class='child'>
+                <h2 class="text-center">Commands to buy collectibles: </h2>
+            </div>
+        </div>
+    
+        <!-- Last button + textarea -->
+        <div class="cards-second" >
+            <input  type="number" id="collectible_input" onchange="alert(this.value)" min="1" max="8" size="10" maxlength="1" placeholder="Insert the collectible ID">
+            <button class="card-second" onclick="App.getOperator()">Buy Collectible (get operator)</button>
+        </div>
+        
+        <!-- dividing line -->
+        <hr style="height:40%;width:70%;border-width:1%;color:gray;background-color:gray">
+    
+        <!-- Second block of info displayed -->
+        <div class='parent'>
+            <div class='child'>
+                <h3 class="text-left" id="accountId">Lottery balance: </h3>
+            </div>
+        </div>
+    
+    </div> <!-- OPERATOR INTERFACE FINE -->
+    
+    
+
+    <!-- USER INTERFACE INIZIO -->
+    <div id="user_interface">
+
+        <!-- dividing line -->
+        <hr style="height:40%;width:70%;border-width:1%;color:gray;background-color:gray">
+
+        <!-- Commands string -->
+        <div class='parent'>
+            <div class='child'>
+                <h2 class="text-center">Buy a ticket: </h2>
+            </div>
+        </div>
+
+
+        <!-- Second block of info displayed -->
+        <div class='parent'>
+            <div class='child'>
+                <h3 class="text-left">Insert the 6 numbers: </h3>
+        </div>
+
+        <!-- Last button + textarea -->
+        <div class="cards-second" >
+            <input  type="number" id="number_input" name="quantity1" min="1" max="69" placeholder="Insert the first standard number">
+            <input  type="number" id="number_input" name="quantity2" min="1" max="69" placeholder="Insert the second standard number">
+            <input  type="number" id="number_input" name="quantity3" min="1" max="69" placeholder="Insert the third standard number">
+            <input  type="number" id="number_input" name="quantity4" min="1" max="69" placeholder="Insert the fourth standard number">
+            <input  type="number" id="number_input" name="quantity5" min="1" max="69" placeholder="Insert the fifth standard number">
+            <input  type="number" id="number_input" name="quantity6" min="1" max="26" placeholder="Insert the Powerball number">
+            <button class="card-second" onclick="App.getOperator()">Buy ticket</button>
+        </div>
+                
+        </div>
+
+
+        <!-- dividing line -->
+        <hr style="height:40%;width:70%;border-width:1%;color:gray;background-color:gray">
+
+    </div> <!-- USER INTERFACE FINE -->
+
+
+    <!-- COMMON INTERFACE SECOND PART START-->
 
     <!-- Second block of info displayed -->
     <div class='parent'>
         <div class='child'>
-            <h3 class="text-left" id="accountId">Lottery balance: </h3>
-        </div>
-
-        <div class='child'>
             <h3 class="text-left" id="accountType">Drawn numbers: </h3>
         </div>
     </div>
+
+    <!-- COMMON INTERFACE SECOND PART END-->
 
 
     <div id="mainUI" class="col-lg-9">
@@ -100,6 +166,7 @@
 
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
     <!-- Web3 -->

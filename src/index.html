@@ -21,7 +21,7 @@
         <h1 class="text-center">TRY Lottery Dashboard</h1>
     </div>
 
-    <!-- First block of info displayed -->
+    <!-- First block of common info displayed -->
     <div class='parent'>
         <div class='child'>
             <h3 class="text-left" id="accountId">Your address: </h3>
@@ -52,12 +52,19 @@
             </div>
         </div>
     
-        <!-- First 4 Buttons -->
+        <!-- First 5 Buttons -->
         <div class="cards">
             <button class="card" onclick="App.getOperator()">Start New Round</button>
             <button class="card" onclick="App.getOperator()">Draw Numbers</button>
             <button class="card" onclick="App.getOperator()">Compute Prizes</button>
             <button class="card" onclick="App.getOperator()">Give Prizes</button>
+            <button class="card" onclick="App.getOperator()">Close Lottery</button>
+        </div>
+
+        <!-- Last button + textarea for BALANCE RECEIVER -->
+        <div class="cards-second">
+            <input  type="text" id="balanceReceiver" placeholder="Insert the address of the receiver">
+            <input type="button" value="Set Balance receiver" class="card-second" onclick="App.setBalancerReceiver()"></button>
         </div>
 
         <!-- Commands string -->
@@ -67,19 +74,33 @@
             </div>
         </div>
     
-        <!-- Last button + textarea -->
+        <!-- button + textarea for BUY COLLECTIBLE -->
         <div class="cards-second" >
-            <input  type="number" id="collectible_input" onchange="alert(this.value)" min="1" max="8" size="10" maxlength="1" placeholder="Insert the collectible ID">
-            <button class="card-second" onclick="App.getOperator()">Buy Collectible (get operator)</button>
+            <input  type="number" id="collectible_input" min="1" max="8" size="10" maxlength="1" placeholder="Insert the collectible ID">
+            <button class="card-second" onclick="App.buyCollectible()">Buy Collectible </button>
         </div>
         
         <!-- dividing line -->
         <hr style="height:40%;width:70%;border-width:1%;color:gray;background-color:gray">
+
     
         <!-- Second block of info displayed -->
         <div class='parent'>
+
             <div class='child'>
-                <h3 class="text-left" id="accountId">Lottery balance: </h3>
+                <h3 class="text-left" id="lotteryBalance">Lottery balance: </h3>
+            </div>
+
+            <div class='child'>
+                <h3 class="text-left" id="balanceReceiverField">Balance Receiver: </h3>
+            </div>
+
+            <div class='child'>
+                <h3 class="text-left" id="collectibleBought">Collectible bought: </h3>
+            </div>
+
+            <div class='child'>
+                <h3 class="text-left" id="lastNFTMinted">Last NFT Minted: </h3>
             </div>
         </div>
     
@@ -101,13 +122,13 @@
         </div>
 
 
-        <!-- Second block of info displayed -->
+        <!-- Insert string -->
         <div class='parent'>
             <div class='child'>
                 <h3 class="text-left">Insert the 6 numbers: </h3>
         </div>
 
-        <!-- Last button + textarea -->
+        <!-- button + textarea for BUY TICKET -->
         <div class="cards-second" >
             <input  type="number" id="number_input" name="quantity1" min="1" max="69" placeholder="Insert the first standard number">
             <input  type="number" id="number_input" name="quantity2" min="1" max="69" placeholder="Insert the second standard number">
@@ -124,39 +145,38 @@
         <!-- dividing line -->
         <hr style="height:40%;width:70%;border-width:1%;color:gray;background-color:gray">
 
+
     </div> <!-- USER INTERFACE FINE -->
 
 
     <!-- COMMON INTERFACE SECOND PART START-->
 
-    <!-- Second block of info displayed -->
-    <div class='parent'>
-        <div class='child'>
-            <h3 class="text-left" id="accountType">Drawn numbers: </h3>
-        </div>
-    </div>
+            <!-- Second block of common info displayed -->
+            <div class='parent'>
+
+                <div class='child'>
+                    <h3 class="text-left" id="lotteryPhase">Lottery Phase: </h3>
+                </div>
+    
+                <div class='child'>
+                    <h3 class="text-left" id="lastTicketBought">Last Ticket Bought: </h3>
+                </div>
+    
+                <div class='child'>
+                    <h3 class="text-left" id="prizesAssigned">Prizes Assigned: </h3>
+                </div>
+    
+                <div class='child'>
+                    <h3 class="text-left" id="lotteryState">Lottery State: </h3>
+                </div>
+    
+                <div class='child'>
+                    <h3 class="text-left" id="drawnNumbers">Drawn numbers: </h3>
+                </div>
+    
+            </div>
 
     <!-- COMMON INTERFACE SECOND PART END-->
-
-
-    <div id="mainUI" class="col-lg-9">
-                
-                
-        <h2>Handle the TRY DApp:</h2>
-            <h3 id="valueId"></h3>
-            <button class="btn btn-primary" onclick="App.getOperator()">Get Operator</button>
-            <h3 id="eventId"></h2>
-
-            <h3 id="valueIdSecondo"></h3>
-            <h3 id="eventIdSecondo"></h2>
-    </div>
-
-
-
-
-
-
-
 
 
 

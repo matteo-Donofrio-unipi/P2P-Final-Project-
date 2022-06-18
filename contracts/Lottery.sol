@@ -40,7 +40,7 @@ contract Lottery{
     bool private round_finished=true; //start initially as true, so a new round can start
     bool private prizes_computed=false;
     bool private prizes_given=false;
-    bool private lottery_open=true; //set to true since it's used to distinghuish if the lottery has been closed or not.
+    bool public lottery_open=true; //set to true since it's used to distinghuish if the lottery has been closed or not.
     bool private balance_receiver_set = false;
 
     uint8 private immutable collectibles_number = 8;
@@ -49,11 +49,12 @@ contract Lottery{
     constructor () {
         //init the lottery operator
         operator = msg.sender;
+        init_side_contracts();
     }
 
     //EVENTS
 
-    event bal_initialized(bool res);
+    event bal_initialized(address receiver);
     event start_new_round(bool buy_phase);
     event start_extraction_phase(bool extraction_phase);
     event start_reward_phase(bool reward_phase);
@@ -64,6 +65,9 @@ contract Lottery{
     event prize_assigned(address winner, uint8[6] value_provided_user, uint8[6] draw_numbers, uint8 class_prize); 
     //address of the winner, values provided by the winner, drawn numbers, class of the prize
 
+    event collectible_bought(uint8 id, string description);
+
+    event NFT_minted_now (address owner,string description, uint8 NFT_class);
 
     event lottery_closed(bool lottery_closed);
     
@@ -114,6 +118,12 @@ contract Lottery{
 
     //GETTER FUNCTIONS
 
+    function get_lottery_state() view public returns (string memory){
+        if(lottery_open)
+            return ("Open");
+        else
+            return ("Closed");
+    }
 
     //returns the block.number registered at the start round time
     function get_block_initRound() view public returns (uint){
@@ -152,13 +162,12 @@ contract Lottery{
 
     //BUSINESS LOGIC FUNCTIONS
 
-    function init_side_contracts() external returns (bool res){
+    function init_side_contracts() internal returns (bool res){
         newnft = new newNFT();
 
         CL = new Collectibles(); 
         CL_address = CL.get_address();
         res = true;
-        emit bal_initialized(true);
         return res;
     }
 
@@ -168,6 +177,9 @@ contract Lottery{
         require(address(0x0)!= receiver, "Invalid address given");
         balance_receiver=receiver;
         balance_receiver_set=true;
+
+        emit bal_initialized(receiver);
+
         res = true;
         return res;
     }
@@ -195,6 +207,9 @@ contract Lottery{
         require(id_collectible <= collectibles_number, "Too high Collectible_id inserted");
         collectibles_bought[id_collectible] = string(Collectibles(CL_address).buy_collectible{value:msg.value}(id_collectible));
         number_of_collectibles_bought++;
+
+        emit collectible_bought(id_collectible,collectibles_bought[id_collectible] );
+
         res = true;
         return res;
     }
@@ -441,6 +456,8 @@ contract Lottery{
         uint8 tokenId = newnft.mintToken(owner, collectibles_bought[NFT_class], NFT_class);
 
         NFT_minted.push(tokenId);
+
+        emit NFT_minted_now (owner, collectibles_bought[NFT_class], NFT_class);
 
         return true;
     }

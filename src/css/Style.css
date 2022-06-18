@@ -75,7 +75,7 @@ body {
 .cards-second {
   max-width: 60%;
   margin: 0 auto;
-  margin-top: 1%;
+  margin-top: 3%;
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(2, 1fr);

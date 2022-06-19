@@ -87,6 +87,7 @@ App = { // OGGETTO CON VARIABILI E METODI
 
             //get the last collectible bought 
             res = await instance.get_last_collectible_bought({from: App.account});
+            console.log("LCB "+res);
             $("#lastCollectibleBought").html("Last Collectible bought: "+res);
 
             //get the last NFT minted (if set)
@@ -99,14 +100,21 @@ App = { // OGGETTO CON VARIABILI E METODI
             res = await instance.lottery_phase({from: App.account}); 
             $("#lotteryPhase").html("Lottery Phase: "+res);
 
+
             //get the last ticket bought (if set)
             try{
                 res = await instance.get_last_ticket_bought({from: App.account});
+                if(res[1][0]==0){ //res[0] = address, res[1] = array di valori scelti 
+                    res = "No ticket bought so far";
+                    $("#lastTicketBought").html("Last Ticket Bought: "+res);
+                }
+                else
+                    $("#lastTicketBought").html("Last Ticket Bought: by "+res[0]+" is ["+res[1]+"] ");
             }
             catch{
                 res = "No ticket bought so far";
+                $("#lastTicketBought").html("Last Ticket Bought: "+res);
             }
-            $("#lastTicketBought").html("Last Ticket Bought: "+res);
 
             
             //get the lottery state
@@ -141,16 +149,24 @@ App = { // OGGETTO CON VARIABILI E METODI
             });
 
             instance.collectible_bought().on('data', function (event) { //click is the name of the event
-                $("#lastCollectibleBought").html("Collectible bought: "+event.args[1]);
+                $("#lastCollectibleBought").html("Last Collectible bought: "+event.args[1]);
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
 
             instance.NFT_minted_now().on('data', function (event) { //click is the name of the event
-                $("#lastNFTMinted").html("Last NFT Minted: "+event);
+                $("#lastNFTMinted").html("Last NFT Minted: "+event.returnValues[0]+" "+event.returnValues[1]+" "+event.returnValues[2]+" ");
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
+
+
+            instance.NFT_transfered().on('data', function (event) { //click is the name of the event
+                $("#lastNFTMinted").html("Last NFT Transfered: "+event.returnValues[0]+" "+event.returnValues[1]+" "+event.returnValues[2]+" ");
+                console.log(event);
+                // If event has parameters: event.returnValues.valueName
+            });
+            
 
 
 
@@ -173,11 +189,9 @@ App = { // OGGETTO CON VARIABILI E METODI
             });
 
 
-
-
             instance.ticket_bought().on('data', function (event) { //click is the name of the event
-                $("#lastTicketBought").html("Last Ticket Bought: "+event);
-                console.log(event);
+                $("#lastTicketBought").html("Last Ticket Bought: by "+event[0]+" is ["+event[1]+"] ");
+                console.log("LTB: "+JSON.stringify(event).returnValues[0]+JSON.stringify(event).returnValues[1]);
                 // If event has parameters: event.returnValues.valueName
             });
 
@@ -196,11 +210,10 @@ App = { // OGGETTO CON VARIABILI E METODI
             });
 
             instance.values_drawn().on('data', function (event) { //click is the name of the event
-                $("#drawnNumbers").html("Drawn numbers: "+event);
+                $("#drawnNumbers").html("Drawn numbers: "+event.returnValues[0]);
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
-            
             
             
 
@@ -302,6 +315,21 @@ App = { // OGGETTO CON VARIABILI E METODI
             //import { ethers } from "./../../node_modules/ethers";
             let collectible_id = document.getElementById('collectible_input').value; // <input name="one"> element
             await instance.buy_collectibles(collectible_id, {from: App.account, value: App.price.toString()});
+        });
+    },
+
+    //FUN USER SIDE
+
+    buyTicket: function() {
+        App.contracts["Contract"].deployed().then(async(instance) =>{
+            //import { ethers } from "./../../node_modules/ethers";
+            let input_values = [];
+            for(let i =1; i< 7; i++)
+                input_values.push((document.getElementById('number_input'+i).value));
+
+            console.log("VALORI "+input_values);
+
+            await instance.buy_ticket(input_values, {from: App.account, value: App.price.toString()});
         });
     },
 

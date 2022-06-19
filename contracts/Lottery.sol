@@ -61,7 +61,7 @@ contract Lottery{
     event start_extraction_phase(bool extraction_phase);
     event start_reward_phase(bool reward_phase);
 
-    event ticket_bought(uint8 [6] ticket_bought);
+    event ticket_bought(address owner, uint8 [6] return_chosen_numbers);
     event values_drawn(uint8[6] values_drawn);
     
     event prize_assigned(address winner, uint8[6] value_provided_user, uint8[6] draw_numbers, uint8 class_prize); 
@@ -70,6 +70,8 @@ contract Lottery{
     event collectible_bought(uint8 id, string description);
 
     event NFT_minted_now (address owner,string description, uint8 NFT_class);
+
+    event NFT_transfered (address owner, string description, uint8 NFT_class);
 
     event lottery_closed(bool lottery_closed);
     
@@ -151,22 +153,31 @@ contract Lottery{
 
     function get_last_collectible_bought() view public returns (string memory){
         if(collectibles_bought_id.length >0)
-            return collectibles_bought[uint8(collectibles_bought_id.length-1)];
+            return string(collectibles_bought[uint8(collectibles_bought_id.length-1)]);
         else
             return ("No collectible bought so far");
     }
 
     function get_last_NFT_minted() view public returns (string memory){
         if(NFT_minted.length >0)
-            return newnft.get_NFT_desc(NFT_minted[NFT_minted.length-1]);
+            return newnft.get_NFT_desc(NFT_minted[NFT_minted.length-1]);//TODO
         else
             return("No NFTs minted so far");
     }    
 
     function get_last_ticket_bought() view public returns (address, uint8 [6] memory){
-        require (tickets_sold.length > 0, "No ticket bought so far");
-        uint8 ticket_id = uint8(tickets_sold.length-1);
-        return get_ticket_information(ticket_id);
+        //require (tickets_sold.length > 0, "No ticket bought so far");
+        if(tickets_sold.length > 0){
+            uint8 ticket_id = uint8(tickets_sold.length-1);
+            return get_ticket_information(ticket_id);
+        }
+        else{
+            uint8 [6] memory ret = [0,0,0,0,0,0];
+            return (address(0x0), ret);
+        }
+            
+        
+        
     }
 
     /*
@@ -283,7 +294,9 @@ contract Lottery{
             payable(owner).transfer(change);
         }
 
-        emit ticket_bought(chosen_numbers);
+        uint8 [6] memory return_chosen_numbers = chosen_numbers; 
+
+        emit ticket_bought(address(msg.sender), return_chosen_numbers);
 
         check_round_is_active();
         
@@ -459,10 +472,11 @@ contract Lottery{
             NFT_class = reward_list[winners[i]]; // take the class of the nft to give as reward
             if(free_NFT[NFT_class]==true){ //if among the first 2 nfts minted there's the one with that class free, transfer it to the winner
                 newnft.give_to_winner(winners[i],NFT_class-1); //class-1 perche i primi 8 nft, memorizzati in indici [0,7] corrispondo alle 8 classi
+                emit NFT_transfered (winners[i], collectibles_bought[NFT_class], NFT_class);
                 free_NFT[NFT_class]=false; //set it to false
             }
             else
-                newnft.mintToken(winners[i], collectibles_bought[NFT_class], NFT_class);
+                mint(NFT_class, winners[i]);
         }
         prizes_given=true;
         round_finished=true; //allow start_New_Round() to be invoked
@@ -507,8 +521,7 @@ contract Lottery{
             
         }
         else{
-            uint8 tokenId = newnft.mintToken(operator, collectibles_bought[1], 1); //initially just mints 1 NFT1 with class == 1
-            NFT_minted.push(tokenId);
+            mint(uint8(1), operator);
             free_NFT[1]=true;
         }
         

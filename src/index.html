@@ -12,7 +12,7 @@
 </head>
 
 <body>
-
+    
     <!-- COMMON INTERFACE FIRST PART START-->
 
 
@@ -130,13 +130,13 @@
 
         <!-- button + textarea for BUY TICKET -->
         <div class="cards-second" >
-            <input  type="number" id="number_input" name="quantity1" min="1" max="69" placeholder="Insert the first standard number">
-            <input  type="number" id="number_input" name="quantity2" min="1" max="69" placeholder="Insert the second standard number">
-            <input  type="number" id="number_input" name="quantity3" min="1" max="69" placeholder="Insert the third standard number">
-            <input  type="number" id="number_input" name="quantity4" min="1" max="69" placeholder="Insert the fourth standard number">
-            <input  type="number" id="number_input" name="quantity5" min="1" max="69" placeholder="Insert the fifth standard number">
-            <input  type="number" id="number_input" name="quantity6" min="1" max="26" placeholder="Insert the Powerball number">
-            <button class="card-second" onclick="App.getOperator()">Buy ticket</button>
+            <input  type="number" id="number_input1"  min="1" max="69" placeholder="Insert the first standard number" required>
+            <input  type="number" id="number_input2"  min="1" max="69" placeholder="Insert the second standard number" required>
+            <input  type="number" id="number_input3"  min="1" max="69" placeholder="Insert the third standard number" required>
+            <input  type="number" id="number_input4"  min="1" max="69" placeholder="Insert the fourth standard number" required>
+            <input  type="number" id="number_input5"  min="1" max="69" placeholder="Insert the fifth standard number" required>
+            <input  type="number" id="number_input6"  min="1" max="26" placeholder="Insert the Powerball number" required>
+            <button class="card-second" onclick="App.buyTicket()">Buy ticket</button>
         </div>
                 
         </div>

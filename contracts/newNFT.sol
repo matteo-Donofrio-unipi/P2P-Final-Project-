@@ -37,6 +37,10 @@ import "./../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
             return (ownershipRecord[tokenId_given].nft_owner,  ownershipRecord[tokenId_given].description_collectible, ownershipRecord[tokenId_given].class);
         }
 
+        function get_NFT_desc(uint8 tokenId_given) public view returns (string memory){
+            return (ownershipRecord[tokenId_given].description_collectible);
+        }
+
 
 
 }

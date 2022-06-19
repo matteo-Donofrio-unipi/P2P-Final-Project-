@@ -9,17 +9,17 @@ contract Lottery{
     newNFT newnft;
     address private CL_address; //address of the Collectibles deployed contract
 
-    address private operator;
+    address public operator;
     address public balance_receiver;
     mapping(uint8=>string) private collectibles_bought; // id_collectible => collectible description
-    uint8 private number_of_collectibles_bought;
-    uint8 [6] private drawn_numbers; 
+    uint8 [] private collectibles_bought_id;
+    uint8 [6] public drawn_numbers; 
     mapping (uint8 => bool) private drawn_numbers_mapping; // drawn_number => true
     mapping (address => uint8) private reward_list; //address winner => class of the reward nft
     address[] private winners;
     
 
-    uint8[] private NFT_minted; //take track of nft minted by this
+    uint8[] private NFT_minted; //take track of token id minted so far
 
     mapping (uint8 => bool) private free_NFT; // nft_class => bool saying if the NFT minted intially, with that class, is already assigned (value false) or not (value true)
 
@@ -30,7 +30,7 @@ contract Lottery{
 
     Ticket[] private tickets_sold;
 
-    uint64 private immutable price_tricket = 1000000000000000000;
+    uint64 public immutable price_tricket = 1000000000000000000;
     uint64 private block_number_init; //
     uint64 private immutable M = 5;
 
@@ -44,6 +44,8 @@ contract Lottery{
     bool private balance_receiver_set = false;
 
     uint8 private immutable collectibles_number = 8;
+
+    string public lottery_phase = "Not Started";
 
 
     constructor () {
@@ -143,22 +145,37 @@ contract Lottery{
         return (tickets_sold[id].owner, tickets_sold[id].chosen_numbers);
     }
 
-    function get_drawn_numbers() view public returns (uint8 [6] memory){
-        return drawn_numbers;
+    function get_contract_balance () view public returns (uint){
+        return address(this).balance;
     }
 
-    function get_collectibles_information(uint8 id) view public returns (string memory){
-        require(id <= number_of_collectibles_bought, "Wrong collectible_id inserted");
-        return collectibles_bought[id];
+    function get_last_collectible_bought() view public returns (string memory){
+        if(collectibles_bought_id.length >0)
+            return collectibles_bought[uint8(collectibles_bought_id.length-1)];
+        else
+            return ("No collectible bought so far");
     }
 
-    function get_operator() view public returns (address){
-        return operator;
+    function get_last_NFT_minted() view public returns (string memory){
+        if(NFT_minted.length >0)
+            return newnft.get_NFT_desc(NFT_minted[NFT_minted.length-1]);
+        else
+            return("No NFTs minted so far");
+    }    
+
+    function get_last_ticket_bought() view public returns (address, uint8 [6] memory){
+        require (tickets_sold.length > 0, "No ticket bought so far");
+        uint8 ticket_id = uint8(tickets_sold.length-1);
+        return get_ticket_information(ticket_id);
     }
 
-    function get_ticket_price() pure public returns (uint){
-        return price_tricket;
+    /*
+    function get_last_prize_assigned() view public returns (uint){
+        return address(this).balance;
     }
+    */
+
+    //drawn numbers gestita da app.js
 
     //BUSINESS LOGIC FUNCTIONS
 
@@ -196,7 +213,8 @@ contract Lottery{
         for(uint8 i=0;i<tickets_sold.length;i++)
             payable(tickets_sold[i].owner).transfer(price_tricket);    
 
-        emit lottery_closed (true); 
+        emit lottery_closed (true);
+        lottery_phase = "Closed"; 
         res = true;
         return res; 
     }
@@ -206,7 +224,7 @@ contract Lottery{
     function buy_collectibles(uint8 id_collectible) onlyOperator payable external returns(bool res){
         require(id_collectible <= collectibles_number, "Too high Collectible_id inserted");
         collectibles_bought[id_collectible] = string(Collectibles(CL_address).buy_collectible{value:msg.value}(id_collectible));
-        number_of_collectibles_bought++;
+        collectibles_bought_id.push(id_collectible);
 
         emit collectible_bought(id_collectible,collectibles_bought[id_collectible] );
 
@@ -279,6 +297,7 @@ contract Lottery{
             buy_phase=false;
             extraction_phase=true; 
             emit start_extraction_phase(true);
+            lottery_phase = "Extraction Phase";
         }   
     }
 
@@ -339,6 +358,7 @@ contract Lottery{
         extraction_phase=false;
         reward_phase=true;
         emit start_reward_phase(true);
+        lottery_phase = "Reward Phase";
         res = true;
         return res;
     }
@@ -499,6 +519,7 @@ contract Lottery{
         reward_phase=false;
         buy_phase=true;
         round_finished=false;
+        lottery_phase="Buy Phase";
         emit start_new_round(true);
         res = true;
         return res;

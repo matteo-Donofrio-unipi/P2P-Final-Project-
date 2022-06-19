@@ -67,14 +67,61 @@ App = { // OGGETTO CON VARIABILI E METODI
     initOperator: function(){
         console.log("Dentro initOperator");
         App.contracts["Contract"].deployed().then(async(instance) =>{
-            let res = await instance.get_lottery_state({from: App.account});
-            console.log("OPer  "+res);
-            $("#lotteryState").html("Lottery State: "+res);
-            res = await instance.get_operator({from: App.account});
-            console.log("OPer  "+res);
+
+            //get the lottery operator
+            let res = await instance.operator({from: App.account});  
             App.operator = res.toLowerCase();
-            console.log("Get assegna");
+        
+            //set the account informations
             App.setAccountType();
+
+
+            //get the contract balance 
+            res = await instance.get_contract_balance({from: App.account});
+            $("#lotteryBalance").html("Lottery balance: "+res);
+
+
+            //get the balance receiver (if set, else ret the 0x0 address)
+            res = await instance.balance_receiver({from: App.account});
+            $("#balanceReceiverField").html("Balance Receiver: "+res);
+
+            //get the last collectible bought 
+            res = await instance.get_last_collectible_bought({from: App.account});
+            $("#lastCollectibleBought").html("Last Collectible bought: "+res);
+
+            //get the last NFT minted (if set)
+            res = await instance.get_last_NFT_minted({from: App.account});
+            console.log("NFTNFT"+res);
+            $("#lastNFTMinted").html("Last NFT Minted: "+res);
+
+
+            //get the lottery phase
+            res = await instance.lottery_phase({from: App.account}); 
+            $("#lotteryPhase").html("Lottery Phase: "+res);
+
+            //get the last ticket bought (if set)
+            try{
+                res = await instance.get_last_ticket_bought({from: App.account});
+            }
+            catch{
+                res = "No ticket bought so far";
+            }
+            $("#lastTicketBought").html("Last Ticket Bought: "+res);
+
+            
+            //get the lottery state
+            res = await instance.get_lottery_state({from: App.account});
+            $("#lotteryState").html("Lottery State: "+res);
+
+            //get the drawn numbers
+            try{
+                res = await instance.drawn_numbers({from: App.account});
+            }
+            catch{
+                res = "Will be drawn later";
+            }
+            $("#drawnNumbers").html("Drawn numbers: "+res);
+
         }); 
         return App.listenForEvents();
     },
@@ -94,13 +141,13 @@ App = { // OGGETTO CON VARIABILI E METODI
             });
 
             instance.collectible_bought().on('data', function (event) { //click is the name of the event
-                $("#collectibleBought").html(event);
+                $("#lastCollectibleBought").html("Collectible bought: "+event.args[1]);
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
 
             instance.NFT_minted_now().on('data', function (event) { //click is the name of the event
-                $("#lastNFTMinted").html(event);
+                $("#lastNFTMinted").html("Last NFT Minted: "+event);
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
@@ -108,19 +155,19 @@ App = { // OGGETTO CON VARIABILI E METODI
 
 
             instance.start_new_round().on('data', function (event) {
-                $("#lotteryPhase").html("Buy Phase");
+                $("#lotteryPhase").html("Lottery Phase: Buy Phase");
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
 
             instance.start_extraction_phase().on('data', function (event) {
-                $("#lotteryPhase").html("Extraction Phase");
+                $("#lotteryPhase").html("Lottery Phase: Extraction Phase");
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
 
             instance.start_reward_phase().on('data', function (event) {
-                $("#lotteryPhase").html("Reward Phase");
+                $("#lotteryPhase").html("Lottery Phase: Reward Phase");
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
@@ -129,13 +176,13 @@ App = { // OGGETTO CON VARIABILI E METODI
 
 
             instance.ticket_bought().on('data', function (event) { //click is the name of the event
-                $("#lastTicketBought").html(event);
+                $("#lastTicketBought").html("Last Ticket Bought: "+event);
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
 
             instance.prize_assigned().on('data', function (event) { //click is the name of the event
-                $("#prizesAssigned").html(event);
+                $("#prizesAssigned").html("Prizes Assigned: "+event);
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
@@ -143,12 +190,13 @@ App = { // OGGETTO CON VARIABILI E METODI
             instance.lottery_closed().on('data', function (event) { //click is the name of the event
                 App.lottery_state = "Closed";
                 $("#lotteryState").html("Lottery State: Closed");
+                $("#lotteryPhase").html("Lottery Phase: Closed");
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
 
             instance.values_drawn().on('data', function (event) { //click is the name of the event
-                $("#drawnNumbers").html(event);
+                $("#drawnNumbers").html("Drawn numbers: "+event);
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
@@ -190,6 +238,9 @@ App = { // OGGETTO CON VARIABILI E METODI
         let accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         App.account = accounts[0].toLowerCase();
 
+        //declare the new attribute balance
+        App.balance = await web3.utils.fromWei(await web3.eth.getBalance(accounts[0]))
+
         // verifica se è operator o no
         if(App.account == App.operator)
             App.current_account_type="operator";
@@ -201,7 +252,7 @@ App = { // OGGETTO CON VARIABILI E METODI
         // aggiorna i dati mostrati
         $("#accountId").html("Your address: " + App.account);
         $("#accountType").html("Account type: " + App.current_account_type);
-        $("#accountBalance").html("Account balance: " + App.current_account_type);
+        $("#accountBalance").html("Account balance: " + App.balance);
         change_mode(0);     
     },
 
@@ -250,8 +301,7 @@ App = { // OGGETTO CON VARIABILI E METODI
         App.contracts["Contract"].deployed().then(async(instance) =>{
             //import { ethers } from "./../../node_modules/ethers";
             let collectible_id = document.getElementById('collectible_input').value; // <input name="one"> element
-            let money = App.price.toNumber();
-            await instance.buy_collectibles(collectible_id, {from: App.account, value: web3.utils.fromWei(money)});
+            await instance.buy_collectibles(collectible_id, {from: App.account, value: App.price.toString()});
         });
     },
 

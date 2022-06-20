@@ -11,42 +11,35 @@ contract Lottery{
 
     address public operator;
     address public balance_receiver;
+
     mapping(uint8=>string) private collectibles_bought; // id_collectible => collectible description
     uint8 [] private collectibles_bought_id;
+
     uint8 [6] public drawn_numbers; 
     mapping (uint8 => bool) private drawn_numbers_mapping; // drawn_number => true
+
     mapping (address => uint8) private reward_list; //address winner => class of the reward nft
     address[] private winners;
     
-
     uint8[] private NFT_minted; //take track of token id minted so far
-
     mapping (uint8 => bool) private free_NFT; // nft_class => bool saying if the NFT minted intially, with that class, is already assigned (value false) or not (value true)
 
     struct Ticket{ 
         address owner;
         uint8 [6] chosen_numbers;
     }
-
     Ticket[] private tickets_sold;
 
     uint64 public immutable price_tricket = 1000000000000000000;
     uint64 private block_number_init; //
     uint64 private immutable M = 5;
 
-    bool private buy_phase=false;
-    bool private extraction_phase=false; 
-    bool private reward_phase=false; 
-    bool private round_finished=true; //start initially as true, so a new round can start
-    bool private prizes_computed=false;
-    bool private prizes_given=false;
-    bool public lottery_open=true; //set to true since it's used to distinghuish if the lottery has been closed or not.
-    bool private balance_receiver_set = false;
-
     uint8 private immutable collectibles_number = 8;
 
-    string public lottery_phase = "Not Started";
+    string public lottery_state = "Open";
+    string public lottery_phase_operator = "Not_started";
 
+    bool private first_init_round = true; //used in order to detect the case in startNewRound
 
     constructor () {
         //init the lottery operator
@@ -57,9 +50,8 @@ contract Lottery{
     //EVENTS
 
     event bal_initialized(address receiver);
-    event start_new_round(bool buy_phase);
-    event start_extraction_phase(bool extraction_phase);
-    event start_reward_phase(bool reward_phase);
+
+    event phase_change(string phase_name);
 
     event ticket_bought(address owner, uint8 [6] return_chosen_numbers);
     event values_drawn(uint8[6] values_drawn);
@@ -82,51 +74,40 @@ contract Lottery{
         if (msg.sender == operator) _;
     }
 
+    modifier initPhaseActive{
+        if(keccak256(abi.encodePacked(lottery_phase_operator)) == keccak256(abi.encodePacked("Init_phase")))
+        _;
+    }
+
     modifier buyPhaseActive { //verify that the buy phase is start, so now the users can buy tickets
-        if(buy_phase==true) _;
+        if(keccak256(abi.encodePacked(lottery_phase_operator)) == keccak256(abi.encodePacked("Buy_phase")))
+         _;
     }
 
     modifier  extractionPhaseActive { //verify that the buy phase is closed, so now the operator can extract the random numbers
-        if(extraction_phase == true ) _;
+        if(keccak256(abi.encodePacked(lottery_phase_operator)) == keccak256(abi.encodePacked("Extraction_phase")))
+         _;
     }
 
-    modifier rewardPhaseActive{ //verify that the random numbers are extracted, so now the operator can assign and compute the prizes
-        if(reward_phase==true)
-            _;
+    modifier givePrizesPhaseActive{ //verify that the random numbers are extracted, so now the operator can assign and compute the prizes
+        if(keccak256(abi.encodePacked(lottery_phase_operator)) == keccak256(abi.encodePacked("Give_prizes_phase")))
+        _;
     }
 
-    modifier roundIsFinished{ //verify that a round is finished, so now the oprator can start a new round
-        if(round_finished==true)
-            _;
-    }
-
-    modifier prizesAlreadyComputed{ //verify that the prizes are computed, so now the operator can give them to the winner users
-        if(prizes_computed==true)
+    modifier computePrizesPhaseActive{ //verify that the prizes are computed, so now the operator can give them to the winner users
+        if(keccak256(abi.encodePacked(lottery_phase_operator)) == keccak256(abi.encodePacked("Compute_prizes_phase")))
             _;
     }
 
     modifier lotteryOpen{ //verify that the lottery is open. Once the close_lottery() fun is invoked the value of lottery_open is set to false, so the function can't be invoked anymore.
-        if(lottery_open==true)
+        if(keccak256(abi.encodePacked(lottery_state)) == keccak256(abi.encodePacked("Open")))
             _;
-    }
-
-    modifier prizesNotGivenYet{ //verify that the prizes are not given yet to the winners. Once the give_prizes() fun is invoked, prizes_given is set to false, so the function can't be invoked anymore.
-        if(prizes_given==false)
-        _;
-    }
-
-    modifier balanceReceiverAlreadySet{ //verify that the account that takes the ether at end round is set. If it is not set, the function startNewRound() can't be invoked.
-        if(balance_receiver_set==true)
-        _;
     }
 
     //GETTER FUNCTIONS
 
-    function get_lottery_state() view public returns (string memory){
-        if(lottery_open)
-            return ("Open");
-        else
-            return ("Closed");
+    function get_max_collectible_id() view public returns (uint8){
+        return CL.collectibles_number();
     }
 
     //returns the block.number registered at the start round time
@@ -199,48 +180,53 @@ contract Lottery{
         return res;
     }
 
+    function check_initPhase() internal returns (bool res){
+        res=false;
+        if(collectibles_bought_id.length==8 && (balance_receiver!= address(0x0)) ){
+            lottery_phase_operator="Init_phase";
+            res = true;
+        }
+        return res;    
+    }
+
 
 
     function set_balance_receiver(address receiver) onlyOperator external returns (bool res){
         require(address(0x0)!= receiver, "Invalid address given");
         balance_receiver=receiver;
-        balance_receiver_set=true;
 
         emit bal_initialized(receiver);
-
-        res = true;
-        return res;
+        
+        check_initPhase(); // verify if startNewRound can be invoked
+        
+        return res = true;
     }
 
-    //operator can close the lottery in any moment
-    function close_lottery() onlyOperator lotteryOpen external returns (bool res){
-        //first disable all the other function calls
-        lottery_open=false; //no way to sei it false again => no way of getting reentrancy
-        buy_phase = false;
-        extraction_phase=false;
-        reward_phase=false;
-        round_finished=false;
-
-        for(uint8 i=0;i<tickets_sold.length;i++)
-            payable(tickets_sold[i].owner).transfer(price_tricket);    
-
-        emit lottery_closed (true);
-        lottery_phase = "Closed"; 
-        res = true;
-        return res; 
-    }
-
-
-    //buy collectibles through the Collectibles object
+        //buy collectibles through the Collectibles object
     function buy_collectibles(uint8 id_collectible) onlyOperator payable external returns(bool res){
         require(id_collectible <= collectibles_number, "Too high Collectible_id inserted");
         collectibles_bought[id_collectible] = string(Collectibles(CL_address).buy_collectible{value:msg.value}(id_collectible));
         collectibles_bought_id.push(id_collectible);
 
         emit collectible_bought(id_collectible,collectibles_bought[id_collectible] );
+        
+        check_initPhase(); // verify if startNewRound can be invoked
 
-        res = true;
-        return res;
+        return res = true;
+    }
+
+    //operator can close the lottery in any moment
+    function close_lottery() onlyOperator lotteryOpen external returns (bool res){
+        //first disable all the other function calls
+        lottery_state="Closed"; //no way to set it Open again => no way of getting reentrancy
+        lottery_phase_operator = "Closed";
+
+        for(uint8 i=0;i<tickets_sold.length;i++)
+            payable(tickets_sold[i].owner).transfer(price_tricket);    
+
+        emit lottery_closed (true);
+        
+        return res = true; 
     }
 
     //verify the correctness of the numbers provided by the users
@@ -271,12 +257,11 @@ contract Lottery{
 
 
 
-    function buy_ticket(uint8 [6] calldata  chosen_numbers) payable external returns (bool){
+    function buy_ticket(uint8 [6] calldata  chosen_numbers) buyPhaseActive payable external returns (bool res){
 
         uint64 money=uint64(msg.value);
         address owner = msg.sender;
         //checks for input data
-        require(buy_phase,"Purchase phase concluded");
         require(msg.sender != balance_receiver, "The balance Receiver can't be a player");
         require(chosen_numbers.length == 6, "You have to choose 6 numbers");
         require(check_duplicate(chosen_numbers), "You can't insert duplicate values in the standard numbers");
@@ -300,17 +285,15 @@ contract Lottery{
 
         check_round_is_active();
         
-        return true;
+        return res = true;
     }
 
     //after each ticket bought, verify if the number of blocks M is reached or not
     //invoked by buy_ticket()
     function check_round_is_active() private {
         if( (block.number - block_number_init)>= M){ //round concluded
-            buy_phase=false;
-            extraction_phase=true; 
-            emit start_extraction_phase(true);
-            lottery_phase = "Extraction Phase";
+            lottery_phase_operator = "Extraction_phase";
+            emit phase_change(lottery_phase_operator);
         }   
     }
 
@@ -368,12 +351,10 @@ contract Lottery{
         //cancello variabile locale
         delete computed_values;
 
-        extraction_phase=false;
-        reward_phase=true;
-        emit start_reward_phase(true);
-        lottery_phase = "Reward Phase";
-        res = true;
-        return res;
+        lottery_phase_operator = "Compute_prizes_phase";
+        emit phase_change(lottery_phase_operator);
+
+        return res = true;
     }
 
     //compute, for each ticket bought, the number of matches obtained
@@ -395,7 +376,7 @@ contract Lottery{
 
     
     //compare the drawn_numbers with the values provided by the users in the tickets and elect the winners 
-    function compute_prizes() rewardPhaseActive onlyOperator external returns (bool res){
+    function compute_prizes() computePrizesPhaseActive onlyOperator external returns (bool res){
 
         uint8 powerball_match; //counter
         uint8 normal_matches; //counter
@@ -418,8 +399,7 @@ contract Lottery{
             }
             
         }
-
-        prizes_computed=true;
+        lottery_phase_operator = "Give_prizes_phase";
         res = true;
         return res;
     }
@@ -465,7 +445,8 @@ contract Lottery{
     }
 
     //assign the NFTs to the winners: if a NFT is avaible it just transfer it to the winner, else it mints a new NFT  
-    function give_prizes() onlyOperator rewardPhaseActive prizesAlreadyComputed prizesNotGivenYet external returns (bool res){
+    function give_prizes() onlyOperator givePrizesPhaseActive external returns (bool res){
+        lottery_phase_operator = "Init_phase"; // set here, ANTI REENTRANCY
         uint8 i;
         uint8 NFT_class;
         for(i=0;i<winners.length;i++){
@@ -478,10 +459,8 @@ contract Lottery{
             else
                 mint(NFT_class, winners[i]);
         }
-        prizes_given=true;
-        round_finished=true; //allow start_New_Round() to be invoked
-        res = true;
-        return res;
+
+        return res = true;
     }
 
 
@@ -500,11 +479,17 @@ contract Lottery{
 
 
 
-    function start_New_Round() onlyOperator roundIsFinished balanceReceiverAlreadySet external returns (bool res) { //non deve avere modifier rewardPhase perche viene invocato anche nel construttore 
+    function start_New_Round() onlyOperator initPhaseActive  external returns (bool res) { //non deve avere modifier rewardPhase perche viene invocato anche nel construttore 
         
         uint8 i;
-        if(reward_phase){ //IF A LOTTERY'S ENDING => CLEAN ALL DATA STRUCTURE AND RESTART
+        if(first_init_round){ //IF A LOTTERY'S ENDING => CLEAN ALL DATA STRUCTURE AND RESTART
 
+            mint(uint8(1), operator);
+            free_NFT[1]=true;
+            first_init_round = false;
+            
+        }
+        else{
             delete tickets_sold;
 
             for( i=0; i<5;i++)
@@ -518,22 +503,13 @@ contract Lottery{
             delete winners;
 
             payable(balance_receiver).transfer(address(this).balance);
-            
-        }
-        else{
-            mint(uint8(1), operator);
-            free_NFT[1]=true;
         }
         
             
         block_number_init = uint64(block.number); //SET THE NEW INITIAL BLOCK NUMBER
-        prizes_computed=false;
-        prizes_given=false;
-        reward_phase=false;
-        buy_phase=true;
-        round_finished=false;
-        lottery_phase="Buy Phase";
-        emit start_new_round(true);
+
+        lottery_phase_operator="Buy_phase";
+        emit phase_change(lottery_phase_operator);
         res = true;
         return res;
     }

@@ -8,7 +8,9 @@ App = { // OGGETTO CON VARIABILI E METODI
     operator: '0x0',                 // current ethereum account
     current_account_type : "operator",
     lottery_state : "Open",
+    lottery_phase : "Not started",
     price : 1000000000000000000n,
+    max_collectible_id : 0,
 
 
     init: function() {
@@ -75,6 +77,8 @@ App = { // OGGETTO CON VARIABILI E METODI
             //set the account informations
             App.setAccountType();
 
+            //set the max collectible id
+            App.max_collectible_id = await instance.get_max_collectible_id({from: App.account});
 
             //get the contract balance 
             res = await instance.get_contract_balance({from: App.account});
@@ -97,8 +101,11 @@ App = { // OGGETTO CON VARIABILI E METODI
 
 
             //get the lottery phase
-            res = await instance.lottery_phase({from: App.account}); 
-            $("#lotteryPhase").html("Lottery Phase: "+res);
+            res = await instance.lottery_phase_operator({from: App.account}); 
+            App.lottery_phase = res; 
+            $("#lotteryPhaseOperator").html("Lottery Phase: "+res);
+            if(res == "Not Started" || res == "Buy_phase" || res == "Extraction_phase" || res == "Give_prizes_phase" || res == "Closed")
+                $("#lotteryPhaseUser").html("Lottery Phase: "+res);
 
 
             //get the last ticket bought (if set)
@@ -118,8 +125,9 @@ App = { // OGGETTO CON VARIABILI E METODI
 
             
             //get the lottery state
-            res = await instance.get_lottery_state({from: App.account});
+            res = await instance.lottery_state({from: App.account});
             $("#lotteryState").html("Lottery State: "+res);
+
 
             //get the drawn numbers
             try{
@@ -170,30 +178,23 @@ App = { // OGGETTO CON VARIABILI E METODI
 
 
 
-            instance.start_new_round().on('data', function (event) {
-                $("#lotteryPhase").html("Lottery Phase: Buy Phase");
-                console.log(event);
-                // If event has parameters: event.returnValues.valueName
-            });
-
-            instance.start_extraction_phase().on('data', function (event) {
-                $("#lotteryPhase").html("Lottery Phase: Extraction Phase");
-                console.log(event);
-                // If event has parameters: event.returnValues.valueName
-            });
-
-            instance.start_reward_phase().on('data', function (event) {
-                $("#lotteryPhase").html("Lottery Phase: Reward Phase");
-                console.log(event);
+            instance.phase_change().on('data', function (event) {
+                App.lottery_phase = event; 
+                $("#lotteryPhaseOperator").html("Lottery Phase: "+event);
+                if(event == "Not Started" || event == "Buy_phase" || event == "Extraction_phase" || event == "Give_prizes_phase" || event == "Closed")
+                    $("#lotteryPhaseUser").html("Lottery Phase: "+event);
                 // If event has parameters: event.returnValues.valueName
             });
 
 
-            instance.ticket_bought().on('data', function (event) { //click is the name of the event
-                $("#lastTicketBought").html("Last Ticket Bought: by "+event[0]+" is ["+event[1]+"] ");
-                console.log("LTB: "+JSON.stringify(event).returnValues[0]+JSON.stringify(event).returnValues[1]);
+            instance.ticket_bought().on('data', function (event) {
+                $("#lastTicketBought").html("Last Ticket Bought: by "+event["returnValues"][0]+ " is ["+event["returnValues"][1]+"]");
+                console.log("TICKETTO "+event["returnValues"][0]+" "+event["returnValues"][1]);
                 // If event has parameters: event.returnValues.valueName
             });
+
+                //console.log("LTB2: "+JSON.stringify(event).returnValues[0]);
+                //console.log(Object.getOwnPropertyNames(object1));
 
             instance.prize_assigned().on('data', function (event) { //click is the name of the event
                 $("#prizesAssigned").html("Prizes Assigned: "+event);
@@ -214,24 +215,6 @@ App = { // OGGETTO CON VARIABILI E METODI
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
-            
-            
-
-
-        
-
-
-            /*
-            // web3.eth.getBlockNumber(function (error, block) {
-                // click is the Solidity event
-                instance.click().on('data', function (event) {
-                    $("#eventId").html("Event catched!");
-                    console.log("Event catched");
-                    console.log(event);
-                    // If event has parameters: event.returnValues.valueName
-                });
-            */
-            // });
 
         });
 
@@ -266,70 +249,142 @@ App = { // OGGETTO CON VARIABILI E METODI
         $("#accountId").html("Your address: " + App.account);
         $("#accountType").html("Account type: " + App.current_account_type);
         $("#accountBalance").html("Account balance: " + App.balance);
-        change_mode(0);     
+        change_mode();     
     },
 
     /* SET DI FUNZIONI CHE INVOCANO LE FUNZIONI DELLO SMART CONTRACT */
 
 
     setBalancerReceiver: function() {
+        if(App.lottery_phase != "Not_started"){
+            alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
+            return;
+        }
         App.contracts["Contract"].deployed().then(async(instance) =>{
-            let address_string = document.getElementById('balanceReceiver').value.toLowerCase(); // <input name="one"> element
-            let address = web3.utils.toChecksumAddress(address_string);
+            try{
+                let address_string = document.getElementById('balanceReceiver').value.toLowerCase(); // <input name="one"> element
+                let address = web3.utils.toChecksumAddress(address_string);
+            }
+            catch(err){
+                alert(err); 
+            }
+            
             await instance.set_balance_receiver(address,{from: App.account});
         });
     },
 
     startNewRound: function() {
+        if(App.lottery_phase != "Init_phase"){
+            alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
+            return;
+        }
         App.contracts["Contract"].deployed().then(async(instance) =>{
-            await instance.start_New_Round({from: App.account});
+            try{
+                await instance.start_New_Round({from: App.account});
+            }
+            catch(err){
+                alert(err);
+            }
         });
     },
 
     drawNumbers: function() {
+        if(App.lottery_phase != "Extraction_phase"){
+            alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
+            return;
+        }
         App.contracts["Contract"].deployed().then(async(instance) =>{
-            await instance.draw_numbers({from: App.account});
+            try{
+                await instance.draw_numbers({from: App.account});
+            }
+            catch(err){
+                alert(err);
+            }
         });
     },
 
     computePrizes: function() {
+        if(App.lottery_phase != "Compute_prizes_phase"){
+            alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
+            return;
+        }
         App.contracts["Contract"].deployed().then(async(instance) =>{
-            await instance.compute_prizes({from: App.account});
+            try{
+                await instance.compute_prizes({from: App.account});
+            }
+            catch(err){
+                alert(err);
+            }
         });
     },
 
     givePrizes: function() {
+        if(App.lottery_phase != "Give_prizes_phase"){
+            alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
+            return;
+        }
         App.contracts["Contract"].deployed().then(async(instance) =>{
-            await instance.give_prizes({from: App.account});
+            try{
+                await instance.give_prizes({from: App.account});
+            }
+            catch(err){
+                alert(err);
+            }
         });
     },
 
     closeLottery: function() {
+        if(App.lottery_state != "Open"){
+            alert("Wrong state for this action, actual state is: "+App.lottery_state);
+            return;
+        }
         App.contracts["Contract"].deployed().then(async(instance) =>{
-            await instance.close_lottery({from: App.account});
+            try{
+                await instance.close_lottery({from: App.account});
+            }
+            catch(err){
+                alert(err);
+            }
         });
     },
 
     buyCollectible: function() {
+        if(App.lottery_phase != "Not_started"){
+            alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
+            return;
+        }
         App.contracts["Contract"].deployed().then(async(instance) =>{
-            //import { ethers } from "./../../node_modules/ethers";
-            let collectible_id = document.getElementById('collectible_input').value; // <input name="one"> element
-            await instance.buy_collectibles(collectible_id, {from: App.account, value: App.price.toString()});
+            try{
+                let collectible_id = document.getElementById('collectible_input').value; // <input name="one"> element
+                await instance.buy_collectibles(collectible_id, {from: App.account, value: App.price.toString()});
+            }
+            catch(err){
+                alert("Wrong collectible, ");
+            }
         });
     },
 
     //FUN USER SIDE
 
     buyTicket: function() {
+        if(App.lottery_phase != "Buy_phase"){
+            alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
+            return;
+        }
         App.contracts["Contract"].deployed().then(async(instance) =>{
-            //import { ethers } from "./../../node_modules/ethers";
-            let input_values = [];
-            for(let i =1; i< 7; i++)
-                input_values.push((document.getElementById('number_input'+i).value));
+            try{
+                let input_values = [];
+                for(let i =1; i< 7; i++)
+                    input_values.push((document.getElementById('number_input'+i).value));
 
-            console.log("VALORI "+input_values);
+                console.log("VALORI "+input_values);
 
-            await instance.buy_ticket(input_values, {from: App.account, value: App.price.toString()});
+                await instance.buy_ticket(input_values, {from: App.account, value: App.price.toString()});
+            }
+            catch(err){
+                //console.log(Object.getOwnPropertyNames(err));
+                alert(err);
+            }
         });
     },
 
@@ -347,26 +402,26 @@ function mostraAccount() {
 }
 
 /* AGGIORNA I DIV DA MOSTRARE IN BASE ALL'ACCOUNT SU MM */
-function change_mode(when){
+function change_mode(){
     console.log("dentro change");
-    let speed;
-    if(when==1)
-        speed=500;
-    else
-        speed=0;
+    let speed = 0;
 
     if(App.current_account_type == "operator"){
         $("#operator_interface").show(speed);
-        $("#user_interface").hide(speed);        
+        $("#user_interface").hide(speed);  
+
+        $("#lotteryPhaseOperator").show(speed);  
+        $("#lotteryPhaseUser").hide(speed);  
+              
     }
     else{
         $("#user_interface").show(speed);
         $("#operator_interface").hide(speed);
+
+        $("#lotteryPhaseUser").show(speed);  
+        $("#lotteryPhaseOperator").hide(speed);  
     }  
 }
-
-
-
 
 
 // Call init whenever the window loads

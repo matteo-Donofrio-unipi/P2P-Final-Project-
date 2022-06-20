@@ -61,22 +61,29 @@
             <button class="card" onclick="App.closeLottery()">Close Lottery</button>
         </div>
 
+        <!-- Commands string -->
+        <div class='parent'>
+            <div class='child'>
+                <h2 class="text-center">Set here the balance receiver: </h2>
+            </div>
+        </div>
+
         <!-- Last button + textarea for BALANCE RECEIVER -->
         <div class="cards-second">
-            <input  type="text" id="balanceReceiver" placeholder="Insert the address of the receiver">
+            <input  type="text" id="balanceReceiver" placeholder="Insert Address">
             <input type="button" value="Set Balance receiver" class="card-second" onclick="App.setBalancerReceiver()"></button>
         </div>
 
         <!-- Commands string -->
         <div class='parent'>
             <div class='child'>
-                <h2 class="text-center">Commands to buy collectibles: </h2>
+                <h2 class="text-center">Buy here the collectibles: </h2>
             </div>
         </div>
     
         <!-- button + textarea for BUY COLLECTIBLE -->
         <div class="cards-second" >
-            <input  type="number" id="collectible_input" min="1" max="8" size="10" maxlength="1" placeholder="Insert the collectible ID">
+            <input  type="number" id="collectible_input" min="1" max="8" size="10" maxlength="1" placeholder="Insert ID">
             <button class="card-second" onclick="App.buyCollectible()">Buy Collectible </button>
         </div>
         
@@ -117,25 +124,18 @@
         <!-- Commands string -->
         <div class='parent'>
             <div class='child'>
-                <h2 class="text-center">Buy a ticket: </h2>
+                <h2 class="text-center">Insert the 6 numbers and buy a ticket: </h2>
             </div>
-        </div>
-
-
-        <!-- Insert string -->
-        <div class='parent'>
-            <div class='child'>
-                <h3 class="text-left">Insert the 6 numbers: </h3>
         </div>
 
         <!-- button + textarea for BUY TICKET -->
         <div class="cards-second" >
-            <input  type="number" id="number_input1"  min="1" max="69" placeholder="Insert the first standard number" required>
-            <input  type="number" id="number_input2"  min="1" max="69" placeholder="Insert the second standard number" required>
-            <input  type="number" id="number_input3"  min="1" max="69" placeholder="Insert the third standard number" required>
-            <input  type="number" id="number_input4"  min="1" max="69" placeholder="Insert the fourth standard number" required>
-            <input  type="number" id="number_input5"  min="1" max="69" placeholder="Insert the fifth standard number" required>
-            <input  type="number" id="number_input6"  min="1" max="26" placeholder="Insert the Powerball number" required>
+            <input  type="number" id="number_input1"  min="1" max="69" placeholder="First" required>
+            <input  type="number" id="number_input2"  min="1" max="69" placeholder="Second" required>
+            <input  type="number" id="number_input3"  min="1" max="69" placeholder="Third" required>
+            <input  type="number" id="number_input4"  min="1" max="69" placeholder="Fourth" required>
+            <input  type="number" id="number_input5"  min="1" max="69" placeholder="Fifth" required>
+            <input  type="number" id="number_input6"  min="1" max="26" placeholder="Powerball" required>
             <button class="card-second" onclick="App.buyTicket()">Buy ticket</button>
         </div>
                 
@@ -153,9 +153,12 @@
 
             <!-- Second block of common info displayed -->
             <div class='parent'>
+                <div class='child'>
+                    <h3 class="text-left" id="lotteryPhaseOperator">Lottery Phase: </h3>
+                </div>
 
                 <div class='child'>
-                    <h3 class="text-left" id="lotteryPhase">Lottery Phase: </h3>
+                    <h3 class="text-left" id="lotteryPhaseUser">Lottery Phase: </h3>
                 </div>
     
                 <div class='child'>

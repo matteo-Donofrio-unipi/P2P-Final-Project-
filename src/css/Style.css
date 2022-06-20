@@ -6,11 +6,10 @@
 
 #title{
   display: block;
-  font-size: 2em;
   font-weight: bold;
-  background-color: dodgerblue;
+  background-color: #e79f19;
   text-align: center;
-  color:whitesmoke;
+  color:rgba(32, 21, 21, 0.992);
 }
 
 #h4{
@@ -20,15 +19,57 @@
   color:whitesmoke;
 }
 
-#h3{
-  margin-top: 0%;
+
+@media screen and (min-width: 601px) {
+  h1{
+    font-size: 30px;
+  }
 }
+
+/* If the screen size is 600px wide or less, set the font-size of <div> to 30px */
+@media screen and (max-width: 600px) {
+  h1{
+    font-size: 20px;
+  }
+}
+
+@media screen and (min-width: 601px) {
+  h2{
+    font-size: 25px;
+  }
+}
+
+/* If the screen size is 600px wide or less, set the font-size of <div> to 30px */
+@media screen and (max-width: 600px) {
+  h2{
+    font-size: 15px;
+  }
+}
+
+
+
+
+
+@media screen and (min-width: 601px) {
+  h3{
+    font-size: 20px;
+  }
+}
+
+/* If the screen size is 600px wide or less, set the font-size of <div> to 30px */
+@media screen and (max-width: 600px) {
+  h3{
+    font-size: 10px;
+  }
+}
+
+
 
 body {
   height: 100%;
   margin: 0;
-  background-color: rgb(7, 7, 6);
-  color: whitesmoke;
+  background-color: rgba(32, 21, 21, 0.992);
+  color: rgba(245, 245, 245, 0.745);
 }
 
 /* for the main title */
@@ -66,14 +107,17 @@ body {
 
 /* for the buttons grid */
 .cards {
-  max-width: 60%;
+  max-width: 30%;
+  max-height: 20%;
   margin: 0 auto;
   display: grid;
   gap: 1rem;
+  text-align: center;
   grid-template-columns: repeat(2, 1fr);
 }
 .cards-second {
-  max-width: 60%;
+  max-width: 30%;
+  max-height: 20%;
   margin: 0 auto;
   margin-top: 3%;
   display: grid;
@@ -83,15 +127,15 @@ body {
 }
 
 .card {
-  background-color: dodgerblue;
-  color: white;
+  background-color: #e79f19;
+  color: black;
   padding: 1rem;
   height: 4rem;
 }
 
 .card-second {
-  background-color: dodgerblue;
-  color: white;
+  background-color: #e79f19;
+  color: black;
   height: 4rem;
 }
 

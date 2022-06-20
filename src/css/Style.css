@@ -131,12 +131,14 @@ body {
   color: black;
   padding: 1rem;
   height: 4rem;
+  font-size: 13px;
 }
 
 .card-second {
   background-color: #e79f19;
   color: black;
   height: 4rem;
+  font-size: 13px;
 }
 
 /* for the responsiveness of the cards*/

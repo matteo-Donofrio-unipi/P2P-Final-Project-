@@ -37,11 +37,11 @@
                     // gasprice: the gas price
                 const Lottery_Instance = await Lottery_Template.new({from: accounts[0]})
 
-                result = await Lottery_Instance.init_side_contracts({from: accounts[0]})
+                //result = await Lottery_Instance.init_side_contracts({from: accounts[0]})
                // console.log(result)
     
-                const ticket_price = await Lottery_Instance.get_ticket_price({from: accounts[0]})
-                const operator = await Lottery_Instance.get_operator({from: accounts[0]})
+                const ticket_price = await Lottery_Instance.price_tricket({from: accounts[0]})
+                const operator = await Lottery_Instance.operator({from: accounts[0]})
                 /*
                 console.log("Ticket Price:")
                 console.log(ticket_price)

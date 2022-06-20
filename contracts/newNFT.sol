@@ -23,7 +23,7 @@ import "./../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
             ownershipRecord[tokenId]=(NFT_info(recipient,tokenId, description_collectible_given, given_class));
             uint8 token_return = tokenId;
 
-            emit NFT_mint(recipient,tokenId, description_collectible_given, given_class);
+            //emit NFT_mint(recipient,tokenId, description_collectible_given, given_class);
 
             tokenId = tokenId + 1;
             return token_return;

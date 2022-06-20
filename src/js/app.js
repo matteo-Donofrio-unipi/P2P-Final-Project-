@@ -104,7 +104,7 @@ App = { // OGGETTO CON VARIABILI E METODI
             res = await instance.lottery_phase_operator({from: App.account}); 
             App.lottery_phase = res; 
             $("#lotteryPhaseOperator").html("Lottery Phase: "+res);
-            if(res == "Not Started" || res == "Buy_phase" || res == "Extraction_phase" || res == "Give_prizes_phase" || res == "Closed")
+            if(res == "Not_started" || res == "Buy_phase" || res == "Extraction_phase" || res == "Give_prizes_phase" || res == "Closed")
                 $("#lotteryPhaseUser").html("Lottery Phase: "+res);
 
 
@@ -149,10 +149,17 @@ App = { // OGGETTO CON VARIABILI E METODI
         console.log("Dentro listen");
         App.contracts["Contract"].deployed().then(async (instance) => {
         
+            instance.print().on('data', function (event) {
+                $("#title").html("Len: "+event["returnValues"][0]+" "+event["returnValues"][1]);
+                console.log("eventoPReso1"+event["returnValues"][0]+" "+event["returnValues"][1]);
+                // If event has parameters: event.returnValues.valueName
+            });
+
+
 
             instance.bal_initialized().on('data', function (event) {
                 $("#balanceReceiverField").html("Balance Receiver: "+event.args.receiver);
-                console.log("eventoPReso"+event.args.receiver);
+                console.log("eventoPReso2"+event.args.receiver);
                 // If event has parameters: event.returnValues.valueName
             });
 
@@ -179,10 +186,11 @@ App = { // OGGETTO CON VARIABILI E METODI
 
 
             instance.phase_change().on('data', function (event) {
-                App.lottery_phase = event; 
-                $("#lotteryPhaseOperator").html("Lottery Phase: "+event);
-                if(event == "Not Started" || event == "Buy_phase" || event == "Extraction_phase" || event == "Give_prizes_phase" || event == "Closed")
-                    $("#lotteryPhaseUser").html("Lottery Phase: "+event);
+                App.lottery_phase = event["returnValues"][0]; 
+                $("#lotteryPhaseOperator").html("Lottery Phase: "+event["returnValues"][0]);
+                if(event["returnValues"][0] == "Not Started" || event["returnValues"][0] == "Buy_phase" || event["returnValues"][0] == "Extraction_phase" || event["returnValues"][0] == "Give_prizes_phase" || event["returnValues"][0] == "Closed")
+                    $("#lotteryPhaseUser").html("Lottery Phase: "+event["returnValues"][0]);
+                
                 // If event has parameters: event.returnValues.valueName
             });
 
@@ -264,12 +272,13 @@ App = { // OGGETTO CON VARIABILI E METODI
             try{
                 let address_string = document.getElementById('balanceReceiver').value.toLowerCase(); // <input name="one"> element
                 let address = web3.utils.toChecksumAddress(address_string);
+                await instance.set_balance_receiver(address,{from: App.account});
             }
             catch(err){
                 alert(err); 
             }
             
-            await instance.set_balance_receiver(address,{from: App.account});
+            
         });
     },
 
@@ -359,7 +368,7 @@ App = { // OGGETTO CON VARIABILI E METODI
                 await instance.buy_collectibles(collectible_id, {from: App.account, value: App.price.toString()});
             }
             catch(err){
-                alert("Wrong collectible, ");
+                alert("Wrong collectible or collectible already bought");
             }
         });
     },

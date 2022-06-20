@@ -66,6 +66,8 @@ contract Lottery{
     event NFT_transfered (address owner, string description, uint8 NFT_class);
 
     event lottery_closed(bool lottery_closed);
+
+    event print(bool first, bool sec);
     
 
     //MODIFIERS
@@ -182,8 +184,10 @@ contract Lottery{
 
     function check_initPhase() internal returns (bool res){
         res=false;
+        //emit print(collectibles_bought_id.length==8, balance_receiver!= address(0x0));
         if(collectibles_bought_id.length==8 && (balance_receiver!= address(0x0)) ){
             lottery_phase_operator="Init_phase";
+            emit phase_change(lottery_phase_operator);
             res = true;
         }
         return res;    
@@ -220,6 +224,7 @@ contract Lottery{
         //first disable all the other function calls
         lottery_state="Closed"; //no way to set it Open again => no way of getting reentrancy
         lottery_phase_operator = "Closed";
+        emit phase_change(lottery_phase_operator);
 
         for(uint8 i=0;i<tickets_sold.length;i++)
             payable(tickets_sold[i].owner).transfer(price_tricket);    
@@ -400,6 +405,7 @@ contract Lottery{
             
         }
         lottery_phase_operator = "Give_prizes_phase";
+        emit phase_change(lottery_phase_operator);
         res = true;
         return res;
     }
@@ -460,6 +466,7 @@ contract Lottery{
                 mint(NFT_class, winners[i]);
         }
 
+        emit phase_change(lottery_phase_operator);
         return res = true;
     }
 

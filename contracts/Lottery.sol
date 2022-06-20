@@ -117,36 +117,39 @@ contract Lottery{
         return block_number_init;
     }
 
-
-    //receive the NFT_id and retrieve the NFT informations (owner, description, class) 
-    function get_NFT_information(uint8 id) view public returns(address, string memory, uint8){
-        require(id < NFT_minted.length, "Wrong ticket_id inserted");
-        return newnft.get_NFT_informations(id);
+    function get_num_tickets_sold() view public returns (uint8){
+        return uint8(tickets_sold.length);
     }
 
     //receive the ticket_id and retrieve the ticket informations (owner, submitted values)
-    function get_ticket_information(uint8 id) view public returns(address, uint8 [6] memory){
-        require(id < tickets_sold.length, "Wrong ticket_id inserted");
-        return (tickets_sold[id].owner, tickets_sold[id].chosen_numbers);
+    function get_ticket_information(uint8 index) view public returns(address, uint8 [6] memory){
+        require(index < tickets_sold.length, "Wrong ticket_id inserted");
+        return (tickets_sold[index].owner, tickets_sold[index].chosen_numbers);
     }
 
     function get_contract_balance () view public returns (uint){
         return address(this).balance;
     }
 
-    function get_last_collectible_bought() view public returns (string memory){
-        if(collectibles_bought_id.length >0)
-            return string(collectibles_bought[uint8(collectibles_bought_id.length-1)]);
+    function get_num_collectibles_bought() view public returns (uint8){
+        return uint8(collectibles_bought_id.length);
+    }
+
+    function get_collectible_info(uint8 index) view public returns (string memory){
+        if(index < uint8(collectibles_bought_id.length))
+            return string(collectibles_bought[collectibles_bought_id[index]]);
         else
             return ("No collectible bought so far");
     }
 
-    function get_last_NFT_minted() view public returns (string memory){
-        if(NFT_minted.length >0)
-            return newnft.get_NFT_desc(NFT_minted[NFT_minted.length-1]);//TODO
-        else
-            return("No NFTs minted so far");
-    }    
+    function get_num_NFTs_minted() view public returns (uint8){
+        return uint8(NFT_minted.length);
+    }
+
+        //receive the NFT_id and retrieve the NFT informations (owner, description, class) 
+    function get_NFT_information(uint8 index) view public returns(address, string memory, uint8, uint8){
+        return newnft.get_NFT_informations(NFT_minted[index]);
+    }  
 
     function get_last_ticket_bought() view public returns (address, uint8 [6] memory){
         //require (tickets_sold.length > 0, "No ticket bought so far");
@@ -185,7 +188,7 @@ contract Lottery{
     function check_initPhase() internal returns (bool res){
         res=false;
         //emit print(collectibles_bought_id.length==8, balance_receiver!= address(0x0));
-        if(collectibles_bought_id.length==8 && (balance_receiver!= address(0x0)) ){
+        if(collectibles_bought_id.length==3 && (balance_receiver!= address(0x0)) ){
             lottery_phase_operator="Init_phase";
             emit phase_change(lottery_phase_operator);
             res = true;

@@ -33,8 +33,8 @@ import "./../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
             super._transfer(msg.sender,winner, _tokenId);
         } 
 
-        function get_NFT_informations(uint8 tokenId_given) public view returns (address, string memory, uint8){
-            return (ownershipRecord[tokenId_given].nft_owner,  ownershipRecord[tokenId_given].description_collectible, ownershipRecord[tokenId_given].class);
+        function get_NFT_informations(uint8 tokenId_given) public view returns (address, string memory, uint8, uint8){
+            return (ownershipRecord[tokenId_given].nft_owner,  ownershipRecord[tokenId_given].description_collectible, ownershipRecord[tokenId_given].class, tokenId_given);
         }
 
         function get_NFT_desc(uint8 tokenId_given) public view returns (string memory){

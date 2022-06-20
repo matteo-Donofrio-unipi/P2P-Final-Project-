@@ -95,21 +95,46 @@
         <div class='parent'>
 
             <div class='child'>
-                <h3 class="text-left" id="lotteryBalance">Lottery balance: </h3>
+                <h3 class="text-left" id="lotteryBalanceOperator">Lottery balance: </h3>
             </div>
 
             <div class='child'>
-                <h3 class="text-left" id="balanceReceiverField">Balance Receiver: </h3>
+                <h3 class="text-left" id="balanceReceiverFieldOperator">Balance Receiver: </h3>
             </div>
 
             <div class='child'>
-                <h3 class="text-left" id="lastCollectibleBought">Last Collectible bought: </h3>
+                <h3 class="text-left" id="listCollectiblesBoughtOperator">List of Collectibles bought: </h3>
             </div>
 
             <div class='child'>
-                <h3 class="text-left" id="lastNFTMinted">Last NFT Minted: </h3>
+                <h3 class="text-left" id="listNFTsMintedOperator">List of NFTs Minted: </h3>
             </div>
         </div>
+
+        <!-- dividing line -->
+        <hr style="height:40%;width:70%;border-width:1%;color:gray;background-color:gray">
+
+
+        <!-- Second block of info displayed -->
+        <div class='parent'>
+            <div class='child'>
+                <h3 class="text-left" id="lotteryPhaseOperator">Lottery Phase: </h3>
+            </div>
+
+            <div class='child'>
+                <h3 class="text-left" id="ticketsSoldOperator">List of Tickets Sold: </h3>
+            </div>            
+
+            <div class='child'>
+                <h3 class="text-left" id="lotteryStateOperator">Lottery State: </h3>
+            </div>
+
+            <div class='child'>
+                <h3 class="text-left" id="drawnNumbersOperator">Drawn numbers: </h3>
+            </div>
+
+        </div>
+
     
     </div> <!-- OPERATOR INTERFACE FINE -->
     
@@ -139,51 +164,38 @@
             <button class="card-second" onclick="App.buyTicket()">Buy ticket</button>
         </div>
                 
-        </div>
 
 
         <!-- dividing line -->
         <hr style="height:40%;width:70%;border-width:1%;color:gray;background-color:gray">
 
+        <div class='parent'>
 
-    </div> <!-- USER INTERFACE FINE -->
-
-
-    <!-- COMMON INTERFACE SECOND PART START-->
-
-            <!-- Second block of common info displayed -->
-            <div class='parent'>
-                <div class='child'>
-                    <h3 class="text-left" id="lotteryPhaseOperator">Lottery Phase: </h3>
-                </div>
-
-                <div class='child'>
-                    <h3 class="text-left" id="lotteryPhaseUser">Lottery Phase: </h3>
-                </div>
-    
-                <div class='child'>
-                    <h3 class="text-left" id="lastTicketBought">Last Ticket Bought: </h3>
-                </div>
-                
-                <!-- COMMON INTERFACE SECOND PART END
-                <div class='child'>
-                    <h3 class="text-left" id="prizesAssigned">Prizes Assigned: </h3>
-                </div>
-                -->
-    
-                <div class='child'>
-                    <h3 class="text-left" id="lotteryState">Lottery State: </h3>
-                </div>
-    
-                <div class='child'>
-                    <h3 class="text-left" id="drawnNumbers">Drawn numbers: </h3>
-                </div>
-    
+            <div class='child'>
+                <h3 class="text-left" id="lotteryPhaseUser">Lottery Phase: </h3>
             </div>
 
-    <!-- COMMON INTERFACE SECOND PART END-->
+            <div class='child'>
+                <h3 class="text-left" id="ticketsBoughtUser">List of Tickets Bought: </h3>
+            </div>
+
+            <div class='child'>
+                <h3 class="text-left" id="NFTWonUser">Last rewards obtained: </h3>
+            </div>
+            
+
+            <div class='child'>
+                <h3 class="text-left" id="lotteryStateUser">Lottery State: </h3>
+            </div>
+
+            <div class='child'>
+                <h3 class="text-left" id="drawnNumbersUser">Drawn numbers: </h3>
+            </div>
+
+        </div>
 
 
+    </div> <!-- USER INTERFACE FINE -->
 
 
 

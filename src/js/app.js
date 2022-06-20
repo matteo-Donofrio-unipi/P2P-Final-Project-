@@ -82,22 +82,37 @@ App = { // OGGETTO CON VARIABILI E METODI
 
             //get the contract balance 
             res = await instance.get_contract_balance({from: App.account});
-            $("#lotteryBalance").html("Lottery balance: "+res);
+            $("#lotteryBalanceOperator").html("Lottery balance: "+res);
 
 
             //get the balance receiver (if set, else ret the 0x0 address)
             res = await instance.balance_receiver({from: App.account});
-            $("#balanceReceiverField").html("Balance Receiver: "+res);
+            $("#balanceReceiverFieldOperator").html("Balance Receiver: "+res);
 
             //get the last collectible bought 
-            res = await instance.get_last_collectible_bought({from: App.account});
+            let num = await instance.get_num_collectibles_bought({from: App.account});
+            if(num>0){
+                for(let i = 0; i < num; i++){
+                    res = await instance.get_collectible_info(i, {from: App.account});
+                    $("#listCollectiblesBoughtOperator").append("<br> "+res+"<br>");
+                }
+            }
             console.log("LCB "+res);
-            $("#lastCollectibleBought").html("Last Collectible bought: "+res);
 
-            //get the last NFT minted (if set)
-            res = await instance.get_last_NFT_minted({from: App.account});
-            console.log("NFTNFT"+res);
-            $("#lastNFTMinted").html("Last NFT Minted: "+res);
+
+            //get the list of NFTs minted (if set)
+            num = await instance.get_num_NFTs_minted({from: App.account});
+            if(num>0){
+                for(let i = 0; i < num; i++){
+                    res = await instance.get_NFT_information(i, {from: App.account});
+                    console.log("NTFMINTATO "+res[0]);
+                    $("#listNFTsMintedOperator").append("<br>Owner: "+res[0]+"<br>NFT description: "+res[1]+"<br> NFT class: "+res[2]+"<br> NFT ID: "+res[3]+"<br>");
+                    
+                    if(App.account == res[0].toLowerCase() && App.account != App.operator){
+                        $("#NFTWonUser").append("<br>NFT description: "+res[1]+"<br> NFT class: "+res[2]+"<br> NFT ID: "+res[3]+"<br>");    
+                }
+                }
+            }
 
 
             //get the lottery phase
@@ -110,23 +125,33 @@ App = { // OGGETTO CON VARIABILI E METODI
 
             //get the last ticket bought (if set)
             try{
-                res = await instance.get_last_ticket_bought({from: App.account});
-                if(res[1][0]==0){ //res[0] = address, res[1] = array di valori scelti 
-                    res = "No ticket bought so far";
-                    $("#lastTicketBought").html("Last Ticket Bought: "+res);
+                num = await instance.get_num_tickets_sold({from: App.account});
+                if(num>0){
+                    for(let i = 0; i < num; i++){
+                        res = await instance.get_ticket_information(i, {from: App.account});
+
+                        if(res[1][0]==0){ //res[0] = address, res[1] = array di valori scelti 
+                            res = "No ticket bought so far";
+                            $("#ticketsSoldOperator").html("Last Ticket Bought: "+res);
+                        }
+                        else
+                            $("#ticketsSoldOperator").append("<br> Owner: "+res[0]+"<br> values: ["+res[1]+"] <br>");
+                            if(App.account == res[0].toLowerCase())
+                                $("#ticketsBoughtUser").append("<br>["+res[1]+"] ");
+                    } 
                 }
-                else
-                    $("#lastTicketBought").html("Last Ticket Bought: by "+res[0]+" is ["+res[1]+"] ");
             }
             catch{
                 res = "No ticket bought so far";
-                $("#lastTicketBought").html("Last Ticket Bought: "+res);
+                $("#ticketsSoldOperator").html("Last Ticket Bought: "+res);
+                $("#ticketsSoldUser").html("Last Ticket Bought: "+res);
             }
 
             
             //get the lottery state
             res = await instance.lottery_state({from: App.account});
-            $("#lotteryState").html("Lottery State: "+res);
+            $("#lotteryStateUser").html("Lottery State: "+res);
+            $("#lotteryStateOperator").html("Lottery State: "+res);
 
 
             //get the drawn numbers
@@ -136,7 +161,8 @@ App = { // OGGETTO CON VARIABILI E METODI
             catch{
                 res = "Will be drawn later";
             }
-            $("#drawnNumbers").html("Drawn numbers: "+res);
+            $("#drawnNumbersOperator").html("Drawn numbers: "+res);
+            $("#drawnNumbersUser").html("Drawn numbers: "+res);
 
         }); 
         return App.listenForEvents();
@@ -148,36 +174,43 @@ App = { // OGGETTO CON VARIABILI E METODI
     listenForEvents: function() {
         console.log("Dentro listen");
         App.contracts["Contract"].deployed().then(async (instance) => {
-        
+
+            /*
             instance.print().on('data', function (event) {
                 $("#title").html("Len: "+event["returnValues"][0]+" "+event["returnValues"][1]);
                 console.log("eventoPReso1"+event["returnValues"][0]+" "+event["returnValues"][1]);
                 // If event has parameters: event.returnValues.valueName
             });
-
+            */
 
 
             instance.bal_initialized().on('data', function (event) {
-                $("#balanceReceiverField").html("Balance Receiver: "+event.args.receiver);
+                $("#balanceReceiverFieldOperator").html("Balance Receiver: "+event.args.receiver);
                 console.log("eventoPReso2"+event.args.receiver);
                 // If event has parameters: event.returnValues.valueName
             });
 
             instance.collectible_bought().on('data', function (event) { //click is the name of the event
-                $("#lastCollectibleBought").html("Last Collectible bought: "+event.args[1]);
+                $("#listCollectiblesBoughtOperator").append("<br> "+event.args[1]);
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
 
             instance.NFT_minted_now().on('data', function (event) { //click is the name of the event
-                $("#lastNFTMinted").html("Last NFT Minted: "+event.returnValues[0]+" "+event.returnValues[1]+" "+event.returnValues[2]+" ");
+                $("#listNFTsMintedOperator").append("<br>Owner: "+event.returnValues[0]+"<br>NFT description: "+event.returnValues[1]+"<br> NFT class: "+event.returnValues[2]+"<br> NFT ID: "+event.returnValues[3]+"<br>");
+                if(App.account == event.returnValues[0].toLowerCase() && App.account != App.operator){
+                    $("#NFTWonUser").append("<br>NFT description: "+event.returnValues[1]+"<br> NFT class: "+event.returnValues[2]+"<br> NFT ID: "+event.returnValues[3]+"<br>");    
+                }
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
 
 
             instance.NFT_transfered().on('data', function (event) { //click is the name of the event
-                $("#lastNFTMinted").html("Last NFT Transfered: "+event.returnValues[0]+" "+event.returnValues[1]+" "+event.returnValues[2]+" ");
+                $("#listNFTsMintedOperator").append("<br> Last NFT Transfered: "+event.returnValues[0]+" "+event.returnValues[1]+" "+event.returnValues[2]+"<br> NFT ID: "+event.returnValues[3]+"<br>");
+                if(App.account == event.returnValues[0].toLowerCase()){
+                    $("#NFTWonUser").append("<br>NFT description: "+event.returnValues[1]+"<br> NFT class: "+event.returnValues[2]+"<br> NFT ID: "+event.returnValues[3]+"<br>");    
+                }
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
@@ -196,30 +229,30 @@ App = { // OGGETTO CON VARIABILI E METODI
 
 
             instance.ticket_bought().on('data', function (event) {
-                $("#lastTicketBought").html("Last Ticket Bought: by "+event["returnValues"][0]+ " is ["+event["returnValues"][1]+"]");
+                $("#ticketsSoldOperator").append("<br>by: "+event["returnValues"][0]+ " is ["+event["returnValues"][1]+"]");
+                if(App.account == event.returnValues[0].toLowerCase()){
+                    $("#ticketsBoughtUser").append("<br>["+event["returnValues"][1]+"]"+"<br> ");    
+                }
                 console.log("TICKETTO "+event["returnValues"][0]+" "+event["returnValues"][1]);
                 // If event has parameters: event.returnValues.valueName
             });
 
                 //console.log("LTB2: "+JSON.stringify(event).returnValues[0]);
                 //console.log(Object.getOwnPropertyNames(object1));
-
-            instance.prize_assigned().on('data', function (event) { //click is the name of the event
-                $("#prizesAssigned").html("Prizes Assigned: "+event);
-                console.log(event);
-                // If event has parameters: event.returnValues.valueName
-            });
             
             instance.lottery_closed().on('data', function (event) { //click is the name of the event
                 App.lottery_state = "Closed";
-                $("#lotteryState").html("Lottery State: Closed");
-                $("#lotteryPhase").html("Lottery Phase: Closed");
+                $("#lotteryStateOperator").html("Lottery State: Closed");
+                $("#lotteryPhaseOperator").html("Lottery Phase: Closed");
+                $("#lotteryStateUser").html("Lottery State: Closed");
+                $("#lotteryPhaseUser").html("Lottery Phase: Closed");
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
 
             instance.values_drawn().on('data', function (event) { //click is the name of the event
-                $("#drawnNumbers").html("Drawn numbers: "+event.returnValues[0]);
+                $("#drawnNumbersOperator").html("Drawn numbers: "+event.returnValues[0]);
+                $("#drawnNumbersUser").html("Drawn numbers: "+event.returnValues[0]);
                 console.log(event);
                 // If event has parameters: event.returnValues.valueName
             });
@@ -413,23 +446,20 @@ function mostraAccount() {
 /* AGGIORNA I DIV DA MOSTRARE IN BASE ALL'ACCOUNT SU MM */
 function change_mode(){
     console.log("dentro change");
-    let speed = 0;
+
 
     if(App.current_account_type == "operator"){
-        $("#operator_interface").show(speed);
-        $("#user_interface").hide(speed);  
-
-        $("#lotteryPhaseOperator").show(speed);  
-        $("#lotteryPhaseUser").hide(speed);  
-              
+        $("#operator_interface").show();
+        $("#user_interface").hide();                
     }
     else{
-        $("#user_interface").show(speed);
-        $("#operator_interface").hide(speed);
-
-        $("#lotteryPhaseUser").show(speed);  
-        $("#lotteryPhaseOperator").hide(speed);  
-    }  
+        $("#user_interface").show();
+        $("#operator_interface").hide();
+    } 
+    
+    //svuoto le liste di NFT e ticket, essendo specifiche per ogni utente
+    $("#ticketsBoughtUser").html("List of Tickets Bought:");  
+    $("#NFTWonUser").html("Last rewards obtained:");  
 }
 
 

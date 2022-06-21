@@ -68,7 +68,7 @@ contract Lottery{
 
     event lottery_closed(bool lottery_closed);
 
-    event print(bool first, bool sec);
+    event print(address owner,string description, uint8 NFT_class, uint8 id);
     
 
     //MODIFIERS

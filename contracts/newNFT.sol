@@ -31,6 +31,7 @@ import "./../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
         function give_to_winner(address owner,address winner, uint8 _tokenId) external {
             super._transfer(owner, winner, _tokenId);
+            ownershipRecord[_tokenId].nft_owner=winner;
         } 
 
         function get_NFT_informations(uint8 tokenId_given) public view returns (address, string memory, uint8, uint8){

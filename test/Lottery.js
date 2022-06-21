@@ -83,7 +83,14 @@
 
                 await Lottery_Instance.give_prizes({from: operator})
 
-                await Lottery_Instance.start_New_Round({from: operator})
+                let quanti = await Lottery_Instance.get_num_NFTs_minted({from: operator});
+                for(let i = 0; i < quanti; i++){
+                    res = await instance.get_NFT_information(i, {from: App.account});
+                    console.log("NTFMINTATO "+res[0]);
+                       
+                }
+
+                //await Lottery_Instance.start_New_Round({from: operator})
 
                 
                 

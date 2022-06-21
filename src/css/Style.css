@@ -7,9 +7,9 @@
 #title{
   display: block;
   font-weight: bold;
-  background-color: #e79f19;
+  background-color: #70C19A;
   text-align: center;
-  color:rgb(54, 69, 79);
+  color:#302f2f;
 }
 
 #h4{
@@ -127,7 +127,7 @@ body {
 }
 
 .card {
-  background-color: #e79f19;
+  background-color: #70C19A;
   color: black;
   padding: 1rem;
   height: 4rem;
@@ -135,7 +135,7 @@ body {
 }
 
 .card-second {
-  background-color: #e79f19;
+  background-color: #70C19A;
   color: black;
   height: 4rem;
   font-size: 13px;

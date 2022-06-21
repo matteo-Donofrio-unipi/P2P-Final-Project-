@@ -11,6 +11,7 @@ App = { // OGGETTO CON VARIABILI E METODI
     lottery_phase : "Not started",
     price : 1000000000000000000n,
     max_collectible_id : 0,
+    counter : 0,
 
 
     init: function() {
@@ -134,12 +135,14 @@ App = { // OGGETTO CON VARIABILI E METODI
             });
 
             instance.NFT_minted_now().on('data', function (event) { 
+                if(App.counter>=7 && App.lottery_phase_operator == 'Init_phase')
+                    return;
                 $("#listNFTsMintedOperator").append("<br>Owner: "+event.returnValues[0]+"<br>NFT description: "+event.returnValues[1]+"<br> NFT class: "+event.returnValues[2]+"<br> NFT ID: "+event.returnValues[3]+"<br>");
                 if(App.account == event.returnValues[0].toLowerCase() && App.account != App.operator){
                     $("#NFTWonUser").append("<br>NFT description: "+event.returnValues[1]+"<br> NFT class: "+event.returnValues[2]+"<br> NFT ID: "+event.returnValues[3]+"<br>");    
                 }
                 console.log(event);
-                funzione_print();
+                App.counter++;
                 // If event has parameters: event.returnValues.valueName
             });
 
@@ -261,6 +264,11 @@ App = { // OGGETTO CON VARIABILI E METODI
         App.contracts["Contract"].deployed().then(async(instance) =>{
             try{
                 await instance.start_New_Round({from: App.account});
+                $("#ticketsBoughtUser").html("List of Tickets Bought: ");
+                $("#ticketsSoldOperator").html("List of Tickets Sold: ");
+                $("#drawnNumbersOperator").html("Drawn numbers: Will be drawn later");
+                $("#drawnNumbersUser").html("Drawn numbers: Will be drawn later");
+                get_contract_balance();
             }
             catch(err){
                 alert(err);
@@ -341,6 +349,7 @@ App = { // OGGETTO CON VARIABILI E METODI
             catch(err){
                 alert("Wrong collectible or collectible already bought");
             }
+            let accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             App.account_balance = await web3.utils.fromWei(await web3.eth.getBalance(accounts[0]));
             $("#accountBalance").html("Account balance: " + App.account_balance); 
         });
@@ -351,6 +360,10 @@ App = { // OGGETTO CON VARIABILI E METODI
     buyTicket: function() {
         if(App.lottery_phase != "Buy_phase"){
             alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
+            return;
+        }
+        if(App.account == App.balance_receiver_address.toLowerCase()){
+            alert("You can't buy tickets ");
             return;
         }
         App.contracts["Contract"].deployed().then(async(instance) =>{
@@ -367,6 +380,7 @@ App = { // OGGETTO CON VARIABILI E METODI
                 //console.log(Object.getOwnPropertyNames(err));
                 alert(err);
             }
+            let accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             App.account_balance = await web3.utils.fromWei(await web3.eth.getBalance(accounts[0]));
             $("#accountBalance").html("Account balance: " + App.account_balance); 
 
@@ -402,6 +416,7 @@ function get_balance_receiver(){
     App.contracts["Contract"].deployed().then(async(instance) =>{
         let res = await instance.balance_receiver({from: App.account});
         $("#balanceReceiverFieldOperator").html("Balance Receiver: "+res);
+        App.balance_receiver_address = res.toLowerCase();
     });    
 }
 
@@ -410,7 +425,7 @@ function get_list_collectibles_bought(){
         let res;
         let num = await instance.get_num_collectibles_bought({from: App.account});
             if(num>0){
-                $("#listCollectiblesBoughtOperator").html("List of Collectibles bought ");
+                $("#listCollectiblesBoughtOperator").html("List of Collectibles bought: ");
                 for(let i = 0; i < num; i++){
                     res = await instance.get_collectible_info(i, {from: App.account});
                     $("#listCollectiblesBoughtOperator").append("<br> "+res);
@@ -502,13 +517,13 @@ function get_drawn_numbers(){
             //get the drawn numbers
             let res;
             try{
-                console.log("RESS1 "+res);
-                res = await instance.drawn_numbers({from: App.account});
-                console.log("RESS "+res);
+                res = await instance.get_drawn_numbers({from: App.account});
             }
             catch{
                 res = "Will be drawn later";
             }
+            if(res[0]==0)
+                res = "Will be drawn later";
             $("#drawnNumbersOperator").html("Drawn numbers: "+res);
             $("#drawnNumbersUser").html("Drawn numbers: "+res);
             

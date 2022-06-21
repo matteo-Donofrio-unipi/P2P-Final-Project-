@@ -213,7 +213,7 @@ App = { // OGGETTO CON VARIABILI E METODI
         App.account = accounts[0].toLowerCase();
 
         //declare the new attribute balance
-        App.balance = await web3.utils.fromWei(await web3.eth.getBalance(accounts[0]))
+        App.account_balance = await web3.utils.fromWei(await web3.eth.getBalance(accounts[0]))
 
         // verifica se è operator o no
         if(App.account == App.operator)
@@ -226,7 +226,7 @@ App = { // OGGETTO CON VARIABILI E METODI
         // aggiorna i dati mostrati
         $("#accountId").html("Your address: " + App.account);
         $("#accountType").html("Account type: " + App.current_account_type);
-        $("#accountBalance").html("Account balance: " + App.balance); 
+        $("#accountBalance").html("Account balance: " + App.account_balance); 
 
         set_interface(whyIsInvoked);  // based on the account type, display the output  
     },
@@ -341,6 +341,8 @@ App = { // OGGETTO CON VARIABILI E METODI
             catch(err){
                 alert("Wrong collectible or collectible already bought");
             }
+            App.account_balance = await web3.utils.fromWei(await web3.eth.getBalance(accounts[0]));
+            $("#accountBalance").html("Account balance: " + App.account_balance); 
         });
     },
 
@@ -365,6 +367,9 @@ App = { // OGGETTO CON VARIABILI E METODI
                 //console.log(Object.getOwnPropertyNames(err));
                 alert(err);
             }
+            App.account_balance = await web3.utils.fromWei(await web3.eth.getBalance(accounts[0]));
+            $("#accountBalance").html("Account balance: " + App.account_balance); 
+
         });
     },
 

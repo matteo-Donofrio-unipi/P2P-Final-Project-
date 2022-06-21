@@ -22,7 +22,6 @@ contract Lottery{
     address[] private winners;
     
     uint8[] private NFT_minted; //take track of token id minted so far
-    mapping (uint8 => bool) private free_NFT; // nft_class => bool saying if the NFT minted intially, with that class, is already assigned (value false) or not (value true)
 
     struct Ticket{ 
         address owner;
@@ -40,6 +39,8 @@ contract Lottery{
     string public lottery_phase_operator = "Not_started";
 
     bool private first_init_round = true; //used in order to detect the case in startNewRound
+
+    uint8 public contatore =0;
 
     constructor () {
         //init the lottery operator
@@ -61,9 +62,9 @@ contract Lottery{
 
     event collectible_bought(uint8 id, string description);
 
-    event NFT_minted_now (address owner,string description, uint8 NFT_class);
+    event NFT_minted_now (address owner,string description, uint8 NFT_class, uint8 id);
 
-    event NFT_transfered (address owner, string description, uint8 NFT_class);
+    event NFT_transfered (address owner, string description, uint8 NFT_class, uint8 id);
 
     event lottery_closed(bool lottery_closed);
 
@@ -146,7 +147,7 @@ contract Lottery{
         return uint8(NFT_minted.length);
     }
 
-        //receive the NFT_id and retrieve the NFT informations (owner, description, class) 
+        //receive the index in NFT_Minted, then retrieve the NFT informations (owner, description, class) 
     function get_NFT_information(uint8 index) view public returns(address, string memory, uint8, uint8){
         return newnft.get_NFT_informations(NFT_minted[index]);
     }  
@@ -161,9 +162,10 @@ contract Lottery{
             uint8 [6] memory ret = [0,0,0,0,0,0];
             return (address(0x0), ret);
         }
-            
-        
-        
+    }
+
+    function get_drawn_numbers() view public returns (uint8 [6] memory){
+        return drawn_numbers;
     }
 
     /*
@@ -188,7 +190,7 @@ contract Lottery{
     function check_initPhase() internal returns (bool res){
         res=false;
         //emit print(collectibles_bought_id.length==8, balance_receiver!= address(0x0));
-        if(collectibles_bought_id.length==3 && (balance_receiver!= address(0x0)) ){
+        if(collectibles_bought_id.length==8 && (balance_receiver!= address(0x0)) ){
             lottery_phase_operator="Init_phase";
             emit phase_change(lottery_phase_operator);
             res = true;
@@ -211,7 +213,8 @@ contract Lottery{
 
         //buy collectibles through the Collectibles object
     function buy_collectibles(uint8 id_collectible) onlyOperator payable external returns(bool res){
-        require(id_collectible <= collectibles_number, "Too high Collectible_id inserted");
+        require(id_collectible <= collectibles_number, "Wrong Collectible_id inserted");
+        require( id_collectible >0 , "Wrong Collectible_id inserted");
         collectibles_bought[id_collectible] = string(Collectibles(CL_address).buy_collectible{value:msg.value}(id_collectible));
         collectibles_bought_id.push(id_collectible);
 
@@ -458,12 +461,28 @@ contract Lottery{
         lottery_phase_operator = "Init_phase"; // set here, ANTI REENTRANCY
         uint8 i;
         uint8 NFT_class;
+
+        address address_temp;
+        string memory description_temp;
+        uint8 class_temp;
+        uint8 token_id_temp;
         for(i=0;i<winners.length;i++){
+
             NFT_class = reward_list[winners[i]]; // take the class of the nft to give as reward
-            if(free_NFT[NFT_class]==true){ //if among the first 2 nfts minted there's the one with that class free, transfer it to the winner
-                newnft.give_to_winner(winners[i],NFT_class-1); //class-1 perche i primi 8 nft, memorizzati in indici [0,7] corrispondo alle 8 classi
-                emit NFT_transfered (winners[i], collectibles_bought[NFT_class], NFT_class);
-                free_NFT[NFT_class]=false; //set it to false
+
+            // initially, 8 NFTs (one for each class) were minted with owner = operator, and their token_id are in the array NFT_Minted
+            // so now check:
+            // if the NFT minted initially with the class = class of the reward  is owned by the operator yet (this means that was not assigned as reward) => transfer this NFT to the winner user
+            // if the NFT minted initially with the class = class of the reward is owned by a user (this means that was already assigned as reward) => mint another with the same class
+            
+            (address_temp, description_temp, class_temp, token_id_temp) = get_NFT_information(NFT_class-1); 
+            // get_NFT_information takes the token_id of the NFT in input.
+            // Since the first 8 NFT minted are one for each class and they're stored in NFT_Minted, an NFT of class 1 is stored in NFT_Minted[0] (because the index of the array NFT_Minted starts from 0, while the NFT class start from 1)
+            // So generally for the first 8 NFT minted is true that a NFT of class x is stored in NFT_Minted[x-1].  
+            
+            if(address_temp == operator){ 
+                newnft.give_to_winner(operator,winners[i],token_id_temp); //class-1 perche i primi 8 nft, memorizzati in indici [0,7] corrispondo alle 8 classi
+                emit NFT_transfered (winners[i], collectibles_bought[NFT_class], NFT_class, token_id_temp);
             }
             else
                 mint(NFT_class, winners[i]);
@@ -480,7 +499,8 @@ contract Lottery{
 
         NFT_minted.push(tokenId);
 
-        emit NFT_minted_now (owner, collectibles_bought[NFT_class], NFT_class);
+        emit NFT_minted_now (owner, collectibles_bought[NFT_class], NFT_class, tokenId);
+        contatore++;
 
         return true;
     }
@@ -494,8 +514,10 @@ contract Lottery{
         uint8 i;
         if(first_init_round){ //IF A LOTTERY'S ENDING => CLEAN ALL DATA STRUCTURE AND RESTART
 
-            mint(uint8(1), operator);
-            free_NFT[1]=true;
+            //mint the first 8 NFTs, one for each class
+            for(i =1; i< 9; i++)
+                mint(i, operator); //(class, owner)
+            
             first_init_round = false;
             
         }

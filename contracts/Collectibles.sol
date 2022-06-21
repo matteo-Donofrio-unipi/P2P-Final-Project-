@@ -14,7 +14,6 @@ contract Collectibles {
 
     constructor(){
 
-        collectibles_list[0]="Hello_Kitty_0";
         collectibles_list[1]="Hello_Kitty_1";
         collectibles_list[2]="Hello_Kitty_2";
         collectibles_list[3]="Hello_Kitty_3";

@@ -35,8 +35,8 @@ contract Lottery{
 
     uint8 private immutable collectibles_number = 8;
 
-    string public lottery_state = "Open";
-    string public lottery_phase_operator = "Not_started";
+    string public lottery_state = "Closed";
+    string public lottery_phase_operator = "Not_created";
 
     bool private first_init_round = true; //used in order to detect the case in startNewRound
 
@@ -65,6 +65,8 @@ contract Lottery{
     event NFT_minted_now (address owner,string description, uint8 NFT_class, uint8 id);
 
     event NFT_transfered (address owner, string description, uint8 NFT_class, uint8 id);
+
+    event lottery_created(bool lottery_closed);
 
     event lottery_closed(bool lottery_closed);
     
@@ -183,6 +185,13 @@ contract Lottery{
         CL_address = CL.get_address();
         res = true;
         return res;
+    }
+
+    function create_lottery() public {
+        lottery_phase_operator="Created";
+        lottery_state="Open";
+        emit phase_change(lottery_phase_operator);
+        emit lottery_created(true);
     }
 
     function check_initPhase() internal returns (bool res){

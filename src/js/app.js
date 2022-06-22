@@ -8,10 +8,11 @@ App = { // Object
     account_balance: 0,             // balance of that address detected
     current_account_type : "operator",
     operator: '0x0',                // address of the lottery operatore
-    lottery_state : "Open",         // state of the lottery saved locally
-    lottery_phase : "Not started",  // phase of the lottery saved locally
+    lottery_state : "Closed",         // state of the lottery saved locally
+    lottery_phase : "Not_created",  // phase of the lottery saved locally
     price : 1000000000000000000n,   //price of a collectible/ticket
     max_collectible_id : 0,         // max num of collectibles to be bought
+    lottery_created:false,
 
 
     /* 0 */
@@ -108,6 +109,17 @@ App = { // Object
     listenForEvents: function() {
         console.log("Dentro listen");
         App.contracts["Contract"].deployed().then(async (instance) => {
+
+            //event that notifies lottery creation 
+            instance.lottery_created().on('data', function (event) {
+                App.lottery_phase="Created";
+                App.lottery_state="Open";
+                $("#lotteryPhaseOperator").html("Lottery Phase: Created");
+                $("#lotteryPhaseUser").html("Lottery Phase: Created");
+                $("#lotteryStateUser").html("Lottery State: Open");
+                $("#lotteryStateOperator").html("Lottery State: Open");
+                console.log("eventoPReso2"+event);
+            });
 
             //event that notifies when the balance receiver address is set 
             instance.bal_initialized().on('data', function (event) {
@@ -216,7 +228,7 @@ App = { // Object
 
     //Set the address of the account of the balance Receiver (this account will not be able to play/buy tickets)
     setBalancerReceiver: function() {
-        if(App.lottery_phase != "Not_started"){
+        if(App.lottery_phase != "Created"){
             alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
             return;
         }
@@ -259,6 +271,25 @@ App = { // Object
                 alert(err);
             }
         });
+    },
+
+    //create the lottery
+    createLottery: function() {
+        if(App.lottery_phase != "Not_created"){
+            alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
+            console.log(App.lottery_phase == "Not_created");
+            console.log("PHASE: "+App.lottery_phase);
+            return;
+        }
+        App.contracts["Contract"].deployed().then(async(instance) =>{
+            try{
+                await instance.create_lottery({from: App.account});
+            }
+            catch(err){
+                alert(err);
+            }
+        });
+
     },
 
     //draw the number randomically
@@ -313,6 +344,10 @@ App = { // Object
     closeLottery: function() {
         if(App.lottery_state != "Open"){
             alert("Wrong state for this action, actual state is: "+App.lottery_state);
+            App.contracts["Contract"].deployed().then(async(instance) =>{
+            let res = await instance.lottery_state({from: App.account});
+            console.log("STATE: "+res);
+            });
             return;
         }
         App.contracts["Contract"].deployed().then(async(instance) =>{
@@ -327,7 +362,7 @@ App = { // Object
 
     //buy a single collectible
     buyCollectible: function() {
-        if(App.lottery_phase != "Not_started"){
+        if(App.lottery_phase != "Created"){
             alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
             return;
         }
@@ -347,7 +382,7 @@ App = { // Object
 
     //buy all the 8 collectibles in a row
     buyAllCollectibles: function() {
-        if(App.lottery_phase != "Not_started"){
+        if(App.lottery_phase != "Created"){
             alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
             return;
         }
@@ -529,6 +564,8 @@ function get_lottery_state(){
         let res = await instance.lottery_state({from: App.account});
             $("#lotteryStateUser").html("Lottery State: "+res);
             $("#lotteryStateOperator").html("Lottery State: "+res);
+            App.lottery_state=res;
+            console.log("STATE2: "+res);
     });    
 }
 

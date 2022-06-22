@@ -84,7 +84,8 @@
         <!-- button + textarea for BUY COLLECTIBLE -->
         <div class="cards-second" >
             <input  type="number" id="collectible_input" min="1" max="8" size="10" maxlength="1" placeholder="Insert ID">
-            <button class="card-second" onclick="App.buyCollectible()">Buy Collectible </button>
+            <button class="card-second" onclick="App.buyCollectible()">Buy Single Collectible </button>
+            <button class="card-second" onclick="App.buyAllCollectibles()">Buy All Collectibles </button>
         </div>
         
         <!-- dividing line -->
@@ -93,10 +94,6 @@
     
         <!-- Second block of info displayed -->
         <div class='parent'>
-
-            <div class='child'>
-                <h3 class="text-left" id="lotteryBalanceOperator">Lottery balance: </h3>
-            </div>
 
             <div class='child'>
                 <h3 class="text-left" id="balanceReceiverFieldOperator">Balance Receiver: </h3>
@@ -117,6 +114,11 @@
 
         <!-- Second block of info displayed -->
         <div class='parent'>
+
+            <div class='child'>
+                <h3 class="text-left" id="lotteryBalanceOperator">Lottery balance: </h3>
+            </div>
+
             <div class='child'>
                 <h3 class="text-left" id="lotteryPhaseOperator">Lottery Phase: </h3>
             </div>

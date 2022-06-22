@@ -135,8 +135,7 @@ App = { // OGGETTO CON VARIABILI E METODI
             });
 
             instance.NFT_minted_now().on('data', function (event) { 
-                if(App.counter>=7 && App.lottery_phase_operator == 'Init_phase')
-                    return;
+                App.counter>=7 && App.lottery_phase_operator == 'Init_phase'
                 $("#listNFTsMintedOperator").append("<br>Owner: "+event.returnValues[0]+"<br>NFT description: "+event.returnValues[1]+"<br> NFT class: "+event.returnValues[2]+"<br> NFT ID: "+event.returnValues[3]+"<br>");
                 if(App.account == event.returnValues[0].toLowerCase() && App.account != App.operator){
                     $("#NFTWonUser").append("<br>NFT description: "+event.returnValues[1]+"<br> NFT class: "+event.returnValues[2]+"<br> NFT ID: "+event.returnValues[3]+"<br>");    
@@ -269,6 +268,7 @@ App = { // OGGETTO CON VARIABILI E METODI
                 $("#drawnNumbersOperator").html("Drawn numbers: Will be drawn later");
                 $("#drawnNumbersUser").html("Drawn numbers: Will be drawn later");
                 get_contract_balance();
+                get_list_NFTs();
             }
             catch(err){
                 alert(err);
@@ -345,6 +345,25 @@ App = { // OGGETTO CON VARIABILI E METODI
             try{
                 let collectible_id = document.getElementById('collectible_input').value; // <input name="one"> element
                 await instance.buy_collectibles(collectible_id, {from: App.account, value: App.price.toString()});
+            }
+            catch(err){
+                alert("Wrong collectible or collectible already bought");
+            }
+            let accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            App.account_balance = await web3.utils.fromWei(await web3.eth.getBalance(accounts[0]));
+            $("#accountBalance").html("Account balance: " + App.account_balance); 
+        });
+    },
+
+    buyAllCollectibles: function() {
+        if(App.lottery_phase != "Not_started"){
+            alert("Wrong phase for this action, actual phase is: "+App.lottery_phase);
+            return;
+        }
+        App.contracts["Contract"].deployed().then(async(instance) =>{
+            try{
+                for(i=1; i<9; i++)
+                    await instance.buy_collectibles(i, {from: App.account, value: App.price.toString()});
             }
             catch(err){
                 alert("Wrong collectible or collectible already bought");
@@ -560,6 +579,8 @@ function set_interface(whyIsInvoked){
     if(whyIsInvoked==1){
         get_list_NFTs();
         get_list_tickets();
+        get_lottery_phase();
+        get_lottery_state();
     }
     
     

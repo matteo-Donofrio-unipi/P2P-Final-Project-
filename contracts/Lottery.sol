@@ -485,7 +485,7 @@ contract Lottery{
                 emit NFT_transfered (winners[i], collectibles_bought[NFT_class], NFT_class, token_id_temp);
             }
             else
-                mint(NFT_class, winners[i]);
+                mint(NFT_class, winners[i], true);
         }
 
         emit phase_change(lottery_phase_operator);
@@ -493,14 +493,14 @@ contract Lottery{
     }
 
 
-    function mint(uint8 NFT_class, address owner) private returns (bool) {
+    function mint(uint8 NFT_class, address owner, bool print) private returns (bool) {
 
         uint8 tokenId = newnft.mintToken(owner, collectibles_bought[NFT_class], NFT_class);
 
         NFT_minted.push(tokenId);
 
-        emit NFT_minted_now (owner, collectibles_bought[NFT_class], NFT_class, tokenId);
-        contatore++;
+        if(print)
+            emit NFT_minted_now (owner, collectibles_bought[NFT_class], NFT_class, tokenId);
 
         return true;
     }
@@ -516,7 +516,7 @@ contract Lottery{
 
             //mint the first 8 NFTs, one for each class
             for(i =1; i< 9; i++)
-                mint(i, operator); //(class, owner)
+                mint(i, operator, false); //(class, owner, bool that def if print or not the minting)
             
             first_init_round = false;
             

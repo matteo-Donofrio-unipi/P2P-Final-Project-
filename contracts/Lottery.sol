@@ -67,8 +67,6 @@ contract Lottery{
     event NFT_transfered (address owner, string description, uint8 NFT_class, uint8 id);
 
     event lottery_closed(bool lottery_closed);
-
-    event print(address owner,string description, uint8 NFT_class, uint8 id);
     
 
     //MODIFIERS
@@ -189,7 +187,6 @@ contract Lottery{
 
     function check_initPhase() internal returns (bool res){
         res=false;
-        //emit print(collectibles_bought_id.length==8, balance_receiver!= address(0x0));
         if(collectibles_bought_id.length==8 && (balance_receiver!= address(0x0)) ){
             lottery_phase_operator="Init_phase";
             emit phase_change(lottery_phase_operator);

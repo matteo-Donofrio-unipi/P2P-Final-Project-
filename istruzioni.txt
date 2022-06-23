@@ -1,30 +1,48 @@
-Truffle has web3.js inside, so no need to import it
+0) install the following:
+-nodeJS version $12$ or more ($sudo apt install nodejs$) 
+-npm ($sudo apt install npm$) 
+-Truffle (sudo npm install -g truffle) NB: Truffle already contains ganache inside installed
+-Metamask on the browser
 
 
 
-1) go into the folder of the project
-2) install the package.json + lite server with the following:
+1) go into the folder of the project (even empty initially)
+	- truffle init => will create the project structure folder needed
+	- put the smart contracts in the "contracts" folder
+2) in order to install the package.json + lite server + run DApp, you need the following:
+
 	1) npm init
+
 	2) npm install --save lite-server
+
 	3) npm install --save web3
+
 	4) npm install --save @truffle/contract
-	5) ensure to have decommented the dev_network part 
+
+	5) ensure to have decommented the network/development part into the file "truffle-config.js"
+
 	6) ensure to have the bs-config.json file 
+
 	6.1) ensure to have properly set the file package.json
+		- the "scripts" field must have the inner field "dev": "lite-server"
+		- the "dependencies" field must have the inner field "lite-server": "^2.6.1", "web3": "^1.7.3" 
+
 	7) ensure to have set correctly the 1_initial_migration.js file 
-	7.1) ensure to have downloaded "npm install @openzeppelin/contracts"
+		-must contains the "require" and "deploy" of both the "migration.js" file and the "smart contract name file to test" 
+
+	7.1) ensure to have downloaded "npm install @openzeppelin/contracts", since needed for the newNFT smart contract 
+
 	8) ganache-cli -l 100000000 -m "fly harvest slam field nuclear leave decorate manage easily neither garlic venue"
-	9) reset account on metamask	
-	10) truffle migrate --network development --reset
+
+	9) reset the tx history of the account on metamask in order to reset the nonce to 0	(impostazioni/avanzate/ripristina account)
+
+	10) truffle migrate --network development --reset => deploy the contracts on the blockchain, so wait for the commands given by app.js
+
 	11) npm run dev
 
 
 
-Generally, after the installation, you need:
-MNEMONIC: "fly harvest slam field nuclear leave decorate manage easily neither garlic venue"
+2) Once everything is installed, in order to execute a test on the command line (run test in the "test" folder) you need the following:
 
-1) ganache-cli => open a tab with it, so init the blockchain for test
+1) ganache-cli -l 100000000 -m "fly harvest slam field nuclear leave decorate manage easily neither garlic venue" => open a tab with it, so init the blockchain for test
 1.1) truffle test --network development --show-events => start the test and look for the configuration in truffle_config file /network/development field
-2) truffle migrate --network development --reset  => deploy the contracts on the blockchain, so wait for the commands given by app.js
-3) reset the tx history of the account on metamask in order to reset the nonce to 0
-3) npm run dev

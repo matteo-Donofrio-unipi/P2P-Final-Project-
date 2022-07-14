@@ -320,7 +320,7 @@ contract Lottery{
 
         uint8 [6] memory  numbers;
         uint seed =block.difficulty;
-        uint8 extracted_value;
+        uint8 extracted_value;// init set to 0
         bytes32 bhash;
         bytes32 rand;
 
@@ -360,7 +360,7 @@ contract Lottery{
 
         //aggiorno il mapping
         for(uint8 i =0; i<5;i++)
-            drawn_numbers_mapping[computed_values[i]]=true;
+            drawn_numbers_mapping[computed_values[i]]=true; //contiene solo i normal numbers
 
         //scrivo su storage i valori estratti
         drawn_numbers = computed_values;
@@ -454,7 +454,7 @@ contract Lottery{
         if(!done){
             sum_values = powerball_match+normal_matches;
             if(sum_values>0)
-                class_value= 8 - sum_values;
+                class_value= (8 - sum_values);
             else
                 class_value=0;
         }
@@ -487,7 +487,7 @@ contract Lottery{
             // So generally for the first 8 NFT minted is true that a NFT of class x is stored in NFT_Minted[x-1].  
             
             if(address_temp == operator){ 
-                newnft.give_to_winner(operator,winners[i],token_id_temp); //class-1 perche i primi 8 nft, memorizzati in indici [0,7] corrispondo alle 8 classi
+                newnft.give_to_winner(operator,winners[i],token_id_temp); 
                 emit NFT_transfered (winners[i], collectibles_bought[NFT_class], NFT_class, token_id_temp);
             }
             else

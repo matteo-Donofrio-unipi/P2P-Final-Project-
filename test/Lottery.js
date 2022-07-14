@@ -60,10 +60,11 @@
                 
                 let array1 = [1,2,3,4,5,6];
                 let array2 = [7,8,9,10,11,12];
-                let array3 = [13,14,15,16,17,18];
-                let array4 = [19,20,21,22,23,24];
-                let array5 = [25,26,27,28,29,11];
+                let array3 = [25,26,27,28,29,20];
+                let array4 = [50,51,55,57,59,10];
+                let array5 = [40,44,48,51,41,11];
                 let array6 = [30,33,35,54,61,23];
+                //computed_values = [60,15,66,51,14,11];
 
                 try {
                     await Lottery_Instance.buy_ticket(array1, {from: user1, value: price.toString()})
@@ -82,6 +83,16 @@
                 await Lottery_Instance.compute_prizes({from: operator})
 
                 await Lottery_Instance.give_prizes({from: operator})
+
+                const len = await Lottery_Instance.get_num_NFTs_minted({from: operator})
+                
+                console.log("INIZIO NFT");
+
+                for (i=0; i< len; i++){
+                    res = await Lottery_Instance.get_NFT_information(i, {from: operator});
+                    console.log(res);
+                    console.log("------");
+                }
 
                 
                 

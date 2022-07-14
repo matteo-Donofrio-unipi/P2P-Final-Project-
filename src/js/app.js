@@ -110,6 +110,13 @@ App = { // Object
         console.log("Dentro listen");
         App.contracts["Contract"].deployed().then(async (instance) => {
 
+            //emit prize_assigned(tickets_sold[i].owner, num_picked_usr, drawn_numbers, class_value);
+            instance.prize_assigned().on('data', function (event) {
+                console.log("PRIZE ASSIGNED "+event.returnValues[0]+event.returnValues[1]+event.returnValues[2]+event.returnValues[3]);
+                console.log(" ");
+            });
+
+
             //event that notifies lottery creation 
             instance.lottery_created().on('data', function (event) {
                 App.lottery_phase="Created";
@@ -144,11 +151,13 @@ App = { // Object
 
             //event that notifies when a NFT ownership is transfered (usually from the operator to a winner)
             instance.NFT_transfered().on('data', function (event) { 
+                /*
                 $("#listNFTsMintedOperator").append("<br> Last NFT Transfered: Owner: "+event.returnValues[0]+"<br>NFT description: "+event.returnValues[1]+"<br> NFT class: "+event.returnValues[2]+"<br> NFT ID: "+event.returnValues[3]+"<br>");
                 if(App.account == event.returnValues[0].toLowerCase()){
                     $("#NFTWonUser").append("<br>NFT description: "+event.returnValues[1]+"<br> NFT class: "+event.returnValues[2]+"<br> NFT ID: "+event.returnValues[3]+"<br>");    
                 }
                 console.log(event);
+                */
             });
 
             //event that notifies when the phase of the lottery changes (the value of the variable "lottery_phase_operator")
@@ -333,6 +342,7 @@ App = { // Object
         App.contracts["Contract"].deployed().then(async(instance) =>{
             try{
                 await instance.give_prizes({from: App.account});
+                get_list_NFTs();
             }
             catch(err){
                 alert(err);
@@ -353,6 +363,7 @@ App = { // Object
         App.contracts["Contract"].deployed().then(async(instance) =>{
             try{
                 await instance.close_lottery({from: App.account});
+                $("#lotteryBalanceOperator").html("Lottery balance: 0");
             }
             catch(err){
                 alert(err);
